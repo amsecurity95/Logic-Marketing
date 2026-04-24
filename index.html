@@ -6,7 +6,7 @@
 <title>LOGIC MARKETING®</title>
 <link rel="icon" type="image/png" href="./favicon.png">
 <link rel="apple-touch-icon" href="./favicon.png">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Paytone+One&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Paytone+One&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #0d0d0d;
@@ -151,6 +151,161 @@
     display: none; background: none; border: none;
     color: var(--text); font-size: 1.4rem; cursor: pointer;
   }
+
+  /* ===== SIDE MENU (Puzzle Mining style, red brand) ===== */
+  .side-menu-btn {
+    position: relative;
+    width: 44px; height: 44px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0;
+    transition: border-color .3s ease, background .3s ease;
+  }
+  .side-menu-btn:hover { border-color: var(--red); background: rgba(211,0,0,0.08); }
+  .side-menu-btn span {
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 1.5px;
+    background: var(--text);
+    transition: transform .35s cubic-bezier(.77,0,.175,1), opacity .2s ease, top .35s cubic-bezier(.77,0,.175,1);
+  }
+  .side-menu-btn span:nth-child(1) { top: 14px; }
+  .side-menu-btn span:nth-child(2) { top: 21px; }
+  .side-menu-btn span:nth-child(3) { top: 28px; }
+  body.side-menu-open .side-menu-btn span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+  body.side-menu-open .side-menu-btn span:nth-child(2) { opacity: 0; }
+  body.side-menu-open .side-menu-btn span:nth-child(3) { top: 21px; transform: rotate(-45deg); }
+
+  .side-menu-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s ease;
+    z-index: 150;
+  }
+  body.side-menu-open .side-menu-backdrop { opacity: 1; pointer-events: auto; }
+
+  .side-menu {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 460px; max-width: 92vw;
+    background: #0A0A0A;
+    color: var(--text);
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform .55s cubic-bezier(.77,0,.175,1);
+    display: flex; flex-direction: column;
+    padding: 32px 48px 40px;
+    overflow-y: auto;
+    box-shadow: -30px 0 80px rgba(0,0,0,0.5);
+  }
+  body.side-menu-open .side-menu { transform: translateX(0); }
+  .side-menu-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(211,0,0,0.25);
+    margin-bottom: 44px;
+  }
+  .side-menu-head .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .side-menu-close {
+    width: 40px; height: 40px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 20px; line-height: 1;
+    border-radius: 2px;
+    transition: border-color .3s ease, background .3s ease;
+  }
+  .side-menu-close:hover { border-color: var(--red); background: rgba(211,0,0,0.08); }
+  .side-menu nav { display: flex; flex-direction: column; gap: 4px; }
+  .side-menu nav a {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.25;
+    color: var(--text);
+    text-decoration: none;
+    padding: 10px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    position: relative;
+    transition: color .3s ease, padding-left .45s cubic-bezier(.77,0,.175,1);
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  body.side-menu-open .side-menu nav a {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity .5s ease, transform .5s cubic-bezier(.23,1,.32,1), color .3s ease, padding-left .45s cubic-bezier(.77,0,.175,1);
+  }
+  body.side-menu-open .side-menu nav a:nth-child(1) { transition-delay: 0.18s; }
+  body.side-menu-open .side-menu nav a:nth-child(2) { transition-delay: 0.24s; }
+  body.side-menu-open .side-menu nav a:nth-child(3) { transition-delay: 0.30s; }
+  body.side-menu-open .side-menu nav a:nth-child(4) { transition-delay: 0.36s; }
+  body.side-menu-open .side-menu nav a:nth-child(5) { transition-delay: 0.42s; }
+  body.side-menu-open .side-menu nav a:nth-child(6) { transition-delay: 0.48s; }
+  body.side-menu-open .side-menu nav a:nth-child(7) { transition-delay: 0.54s; }
+  .side-menu nav a .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3em;
+    color: rgba(211,0,0,0.8);
+    font-style: normal;
+    position: relative;
+    top: -8px;
+  }
+  .side-menu nav a:hover { color: var(--red); padding-left: 14px; }
+  .side-menu-foot {
+    margin-top: auto;
+    padding-top: 40px;
+    border-top: 1px solid rgba(211,0,0,0.25);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .side-menu-foot p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin: 0;
+  }
+  .side-menu-foot a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--red);
+    text-decoration: none;
+    margin-top: 6px;
+  }
+  @media (max-width: 600px) {
+    .side-menu { padding: 24px 28px 32px; }
+    .side-menu nav a { font-size: 30px; }
+    .side-menu-head { margin-bottom: 32px; padding-bottom: 24px; }
+    .side-menu-btn { width: 40px; height: 40px; }
+    .side-menu-btn span { left: 9px; right: 9px; }
+    .side-menu-btn span:nth-child(1) { top: 13px; }
+    .side-menu-btn span:nth-child(2) { top: 19px; }
+    .side-menu-btn span:nth-child(3) { top: 25px; }
+    body.side-menu-open .side-menu-btn span:nth-child(1),
+    body.side-menu-open .side-menu-btn span:nth-child(3) { top: 19px; }
+  }
+  body.side-menu-open { overflow: hidden; }
 
   /* ===== HERO CONTENT ===== */
   .hero-content {
@@ -1112,10 +1267,34 @@
         <button data-set-lang="fr">FR</button>
       </div>
       <a href="#contact" class="btn-contact"><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
+      <button class="side-menu-btn" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false" onclick="toggleSideMenu()">
+        <span></span><span></span><span></span>
+      </button>
     </div>
     <button class="menu-toggle" id="menuBtn" aria-label="Menu">☰</button>
   </header>
   <div class="nav-overlay" id="navOverlay"></div>
+
+  <div class="side-menu-backdrop" onclick="toggleSideMenu(false)"></div>
+  <aside class="side-menu" id="sideMenu" aria-hidden="true">
+    <div class="side-menu-head">
+      <div class="eyebrow">Menu</div>
+      <button class="side-menu-close" aria-label="Close menu" onclick="toggleSideMenu(false)">×</button>
+    </div>
+    <nav>
+      <a href="#" onclick="toggleSideMenu(false)"><span class="num">01</span><span data-lang-en>Home</span><span data-lang-fr>Accueil</span></a>
+      <a href="#services" onclick="toggleSideMenu(false)"><span class="num">02</span><span data-lang-en>Services</span><span data-lang-fr>Services</span></a>
+      <a href="#work" onclick="toggleSideMenu(false)"><span class="num">03</span><span data-lang-en>Work</span><span data-lang-fr>Projets</span></a>
+      <a href="#about" onclick="toggleSideMenu(false)"><span class="num">04</span><span data-lang-en>About</span><span data-lang-fr>À propos</span></a>
+      <a href="#process" onclick="toggleSideMenu(false)"><span class="num">05</span><span data-lang-en>Process</span><span data-lang-fr>Processus</span></a>
+      <a href="#contact" onclick="toggleSideMenu(false)"><span class="num">06</span><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
+    </nav>
+    <div class="side-menu-foot">
+      <p>Chicago · Worldwide</p>
+      <p>Logic Marketing® 2026</p>
+      <a href="mailto:hello@logicmarketing.co">hello@logicmarketing.co</a>
+    </div>
+  </aside>
 
   <div class="hero-content">
     <div class="left-col reveal-left">
@@ -1532,6 +1711,21 @@
       a.addEventListener('click', closeNav)
     );
   }
+
+  // Side menu (Puzzle Mining style)
+  function toggleSideMenu(force) {
+    const body = document.body;
+    const isOpen = body.classList.contains('side-menu-open');
+    const next = typeof force === 'boolean' ? force : !isOpen;
+    body.classList.toggle('side-menu-open', next);
+    const btn = document.querySelector('.side-menu-btn');
+    const aside = document.getElementById('sideMenu');
+    if (btn) btn.setAttribute('aria-expanded', next ? 'true' : 'false');
+    if (aside) aside.setAttribute('aria-hidden', next ? 'false' : 'true');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.body.classList.contains('side-menu-open')) toggleSideMenu(false);
+  });
 
   // Language toggle
   const langToggle = document.getElementById('langToggle');
