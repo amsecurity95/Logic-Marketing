@@ -948,44 +948,9 @@
       align-items: center;
       justify-content: space-between;
     }
-    .nav-links {
-      display: flex; flex-direction: column;
-      gap: 28px;
-      position: fixed; top: 0; left: 0;
-      height: 100vh; width: min(82%, 340px);
-      background: #0d0d0d;
-      border-right: 1px solid var(--line);
-      padding: 96px 32px 40px;
-      transform: translateX(-100%);
-      transition: transform .55s cubic-bezier(.4,0,.2,1);
-      z-index: 50;
-      justify-content: flex-start;
-    }
-    .nav-links.open { transform: translateX(0); }
-    .nav-links li,
-    .nav-links li a,
-    .nav-links li a span {
-      color: #ffffff !important;
-      font-size: 1.6rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-    }
-    .nav-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      opacity: 0; pointer-events: none;
-      transition: opacity .4s ease;
-      z-index: 40;
-    }
-    .nav-overlay.open { opacity: 1; pointer-events: auto; }
-    .menu-toggle {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 44px; height: 44px;
-      font-size: 1.4rem;
-      order: 3;
-      position: relative; z-index: 60;
-    }
+    .nav-links { display: none; }
+    .nav-overlay { display: none; }
+    .menu-toggle { display: none !important; }
     .nav-right { gap: 8px; order: 2; }
     .btn-contact { display: none; }
 
@@ -1271,9 +1236,7 @@
         <span></span><span></span><span></span>
       </button>
     </div>
-    <button class="menu-toggle" id="menuBtn" aria-label="Menu">☰</button>
   </header>
-  <div class="nav-overlay" id="navOverlay"></div>
 
   <div class="side-menu-backdrop" onclick="toggleSideMenu(false)"></div>
   <aside class="side-menu" id="sideMenu" aria-hidden="true">
@@ -1690,28 +1653,6 @@
 </script>
 
 <script>
-  // Mobile nav
-  const menuBtn = document.getElementById('menuBtn');
-  const navLinks = document.getElementById('navLinks');
-  const navOverlay = document.getElementById('navOverlay');
-  const closeNav = () => {
-    navLinks.classList.remove('open');
-    navOverlay.classList.remove('open');
-    menuBtn.textContent = '☰';
-  };
-  const toggleNav = () => {
-    const isOpen = navLinks.classList.toggle('open');
-    navOverlay.classList.toggle('open', isOpen);
-    menuBtn.textContent = isOpen ? '✕' : '☰';
-  };
-  if (menuBtn) {
-    menuBtn.addEventListener('click', toggleNav);
-    navOverlay.addEventListener('click', closeNav);
-    navLinks.querySelectorAll('a').forEach(a =>
-      a.addEventListener('click', closeNav)
-    );
-  }
-
   // Side menu (Puzzle Mining style)
   function toggleSideMenu(force) {
     const body = document.body;
