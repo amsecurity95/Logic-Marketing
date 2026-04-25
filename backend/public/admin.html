@@ -1894,13 +1894,14 @@
     if (!user.id) { user.id = 1; localStorage.setItem('lm_user', JSON.stringify(user)); }
   }
 
-  if (!localStorage.getItem(KEYS.inbox)) {
-    save(KEYS.inbox, [
-      { id: Date.now()-86400000*2, from: 'Sarah Mitchell', email: 'sarah@bloomcafe.com', subject: 'Branding inquiry', body: 'Hi! We are opening a new café in Champaign and would love a quote for full branding + a launch campaign. Looking to start in May.', read: false, ts: Date.now()-86400000*2 },
-      { id: Date.now()-86400000, from: 'Marcus Reed', email: 'marcus@reedfit.com', subject: 'Need a video team', body: 'Looking for a team to film promo content for my gym. Can you call me at 217-555-0144?', read: false, ts: Date.now()-86400000 },
-      { id: Date.now()-3600000, from: 'Hannah Liu', email: 'hannah@liuphoto.com', subject: 'Website redesign', body: 'My current site is on Wix and needs a serious upgrade. Saw your portfolio — beautiful work.', read: true, ts: Date.now()-3600000 }
-    ], { silent: true });
-  }
+  // Drop the old demo seed if it's still around — these never were real submissions.
+  try {
+    const cur = JSON.parse(localStorage.getItem(KEYS.inbox) || '[]');
+    if (Array.isArray(cur) && cur.length === 3 && cur.every(m => ['Sarah Mitchell','Marcus Reed','Hannah Liu'].includes(m.from))) {
+      localStorage.removeItem(KEYS.inbox);
+    }
+  } catch (_) {}
+  if (!localStorage.getItem(KEYS.inbox)) save(KEYS.inbox, []);
 
   /* ===== ANALYTICS HELPERS (real data) ===== */
   function visitsInWindow(days) {

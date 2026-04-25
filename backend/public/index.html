@@ -1687,6 +1687,7 @@
         <label><span data-lang-en>Tell us about your project</span><span data-lang-fr>Parlez-nous de votre projet</span></label>
         <textarea id="lmMessage" rows="3" required></textarea>
       </div>
+      <input id="lmWebsite" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"/>
       <button type="submit" class="cf-submit">
         <span data-lang-en>Send message</span><span data-lang-fr>Envoyer</span>
       </button>
@@ -1698,43 +1699,47 @@
   (function(){
     const form = document.getElementById('lmContactForm');
     if (!form) return;
-    form.addEventListener('submit', function(e){
+    const INBOX_ENDPOINT = window.LM_INBOX_URL || 'https://logic-marketing-store.aimarmwembo1.workers.dev/api/inbox';
+    form.addEventListener('submit', async function(e){
       e.preventDefault();
       const name = document.getElementById('lmName').value.trim();
       const email = document.getElementById('lmEmail').value.trim();
       const company = document.getElementById('lmCompany').value.trim();
       const service = document.getElementById('lmService').value;
       const message = document.getElementById('lmMessage').value.trim();
+      const honey = document.getElementById('lmWebsite')?.value || '';
       if (!name || !email || !message) return;
-      let inbox = [];
-      try { inbox = JSON.parse(localStorage.getItem('lm_inbox') || '[]'); } catch(_) {}
-      let geo = {};
-      try { geo = JSON.parse(localStorage.getItem('lm_geo') || '{}') || {}; } catch(_) {}
-      inbox.unshift({
-        id: Date.now(),
-        from: name,
-        email,
-        company,
-        service,
-        message,
-        subject: service + (company ? ' — ' + company : ''),
-        body: message,
-        source: 'Contact form — index.html',
-        page: window.location.pathname.split('/').pop() || 'index.html',
-        referrer: document.referrer || 'direct',
-        ip: geo.ip || '',
-        city: geo.city || '',
-        country: geo.country || '',
-        flag: geo.flag || '',
-        lang: navigator.language || '',
-        read: false,
-        ts: Date.now()
-      });
-      localStorage.setItem('lm_inbox', JSON.stringify(inbox));
-      form.reset();
+      const submitBtn = form.querySelector('.cf-submit');
       const msg = document.getElementById('lmMsg');
-      msg.textContent = (document.documentElement.lang === 'fr' ? 'Message envoyé. Nous reviendrons vers vous rapidement.' : 'Message sent. We\'ll be in touch shortly.');
-      setTimeout(() => { msg.textContent = ''; }, 6000);
+      const isFr = document.documentElement.lang === 'fr';
+      submitBtn.disabled = true;
+      const oldLabel = submitBtn.innerHTML;
+      submitBtn.innerHTML = isFr ? 'Envoi…' : 'Sending…';
+      try {
+        const res = await fetch(INBOX_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name, email, company, service, message, website: honey,
+            subject: service + (company ? ' — ' + company : ''),
+            source: 'Contact form — ' + (window.location.pathname.split('/').pop() || 'index.html'),
+            page: window.location.pathname.split('/').pop() || 'index.html',
+            referrer: document.referrer || 'direct',
+            lang: navigator.language || '',
+          }),
+        });
+        if (!res.ok) throw new Error('http ' + res.status);
+        form.reset();
+        msg.style.color = '';
+        msg.textContent = isFr ? 'Message envoyé. Nous reviendrons vers vous rapidement.' : 'Message sent. We\'ll be in touch shortly.';
+      } catch (err) {
+        msg.style.color = '#d30000';
+        msg.textContent = isFr ? 'Erreur d\'envoi. Réessayez ou écrivez à info@logicmarketing.com.' : 'Couldn\'t send. Please try again or email info@logicmarketing.com.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = oldLabel;
+        setTimeout(() => { msg.textContent = ''; msg.style.color = ''; }, 8000);
+      }
     });
   })();
 </script>

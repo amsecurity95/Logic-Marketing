@@ -15,7 +15,7 @@ const ALLOWED_KEYS = new Set([
 function cors(extra = {}) {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, PUT, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Authorization, Content-Type',
     'Access-Control-Max-Age': '86400',
     ...extra,
@@ -36,6 +36,64 @@ export default {
     if (url.pathname === '/api/health') {
       return new Response('ok', { headers: cors({ 'Content-Type': 'text/plain' }) });
     }
+
+    // Public contact form intake — no auth required.
+    if (url.pathname === '/api/inbox' && req.method === 'POST') {
+      let body;
+      try { body = await req.json(); } catch { return err('Bad JSON', 400); }
+      if (!body || typeof body !== 'object') return err('Bad body', 400);
+      // Honeypot
+      if (typeof body.website === 'string' && body.website.length > 0) {
+        return json({ ok: true });
+      }
+      const clean = (s, max = 1000) => String(s == null ? '' : s).slice(0, max);
+      const name = clean(body.name, 200).trim();
+      const email = clean(body.email, 200).trim();
+      const message = clean(body.message, 4000).trim();
+      if (!name || !email || !message) return err('Missing required fields', 400);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Invalid email', 400);
+
+      const prefix = env.PREFIX || 'logic-marketing/';
+      const objectKey = `${prefix}inbox.json`;
+      const existing = await env.STORE.get(objectKey);
+      let payload = { ts: 0, data: [] };
+      if (existing) {
+        try {
+          payload = JSON.parse(await existing.text());
+          if (!Array.isArray(payload.data)) payload.data = [];
+        } catch { payload = { ts: 0, data: [] }; }
+      }
+      const now = Date.now();
+      const entry = {
+        id: now,
+        from: name,
+        email,
+        company: clean(body.company, 200).trim(),
+        service: clean(body.service, 100).trim(),
+        subject: clean(body.subject, 200).trim() || (clean(body.service, 100).trim() || 'Contact form'),
+        body: message,
+        message,
+        source: clean(body.source, 200).trim() || 'Contact form',
+        page: clean(body.page, 200).trim(),
+        referrer: clean(body.referrer, 500).trim() || (req.headers.get('Referer') || 'direct'),
+        ip: req.headers.get('CF-Connecting-IP') || '',
+        city: req.headers.get('CF-IPCity') || '',
+        country: req.headers.get('CF-IPCountry') || '',
+        ua: clean(req.headers.get('User-Agent') || '', 300),
+        lang: clean(body.lang, 20),
+        read: false,
+        ts: now,
+      };
+      payload.data.unshift(entry);
+      // Cap at 1000 entries to keep blob small
+      if (payload.data.length > 1000) payload.data.length = 1000;
+      payload.ts = now;
+      await env.STORE.put(objectKey, JSON.stringify(payload), {
+        httpMetadata: { contentType: 'application/json' },
+      });
+      return json({ ok: true });
+    }
+
     if (!url.pathname.startsWith('/api/store')) return err('Not found', 404);
 
     const auth = req.headers.get('Authorization') || '';
