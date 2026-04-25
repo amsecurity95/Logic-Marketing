@@ -42,7 +42,7 @@
   .top-logo { display: flex; align-items: center; gap: 10px; }
   .top-logo img {
     height: 38px; width: auto; display: block;
-    filter: brightness(0) saturate(100%) invert(13%) sepia(98%) saturate(7490%) hue-rotate(3deg) brightness(95%) contrast(115%);
+    filter: brightness(0) invert(1);
   }
   .top-search {
     max-width: 480px; width: 100%;
@@ -855,13 +855,13 @@
     align-items: center; justify-content: center;
     border-radius: 6px; transition: background .15s;
   }
-  .hamburger:hover { background: #f4f5f7; }
+  .hamburger:hover { background: rgba(255,255,255,0.08); }
   .hamburger span {
     display: block; width: 20px; height: 2px;
-    background: var(--ink); position: relative;
+    background: #fff; position: relative;
   }
   .hamburger span::before, .hamburger span::after {
-    content: ''; position: absolute; left: 0; width: 20px; height: 2px; background: var(--ink);
+    content: ''; position: absolute; left: 0; width: 20px; height: 2px; background: #fff;
   }
   .hamburger span::before { top: -6px; }
   .hamburger span::after { top: 6px; }
