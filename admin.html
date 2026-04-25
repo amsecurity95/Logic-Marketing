@@ -516,6 +516,14 @@
   .dot-online { width: 8px; height: 8px; background: var(--good); border-radius: 50%; box-shadow: 0 0 0 2px #fff; margin-left: -10px; margin-top: 18px; }
 
   .chat-main { display: flex; flex-direction: column; min-width: 0; }
+  .chat-header.dark { background: #0d0d0d; color: #fff; border-bottom-color: #1f1f1f; }
+  .chat-header.dark .title { color: #fff; }
+  .chat-header.dark .sub { color: rgba(255,255,255,0.6); }
+  .chat-header.dark .ch-action {
+    background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.12);
+    padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .chat-header.dark .ch-action:hover { background: rgba(255,255,255,0.16); }
   .chat-header {
     padding: 16px 22px; border-bottom: 1px solid var(--line);
     display: flex; align-items: center; gap: 12px;
@@ -568,6 +576,114 @@
   .chat-send:hover { background: var(--red-dark); }
   .chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
   .chat-empty { padding: 80px 20px; text-align: center; color: var(--muted); margin: auto; }
+  .chat-attach-btn {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all .15s;
+  }
+  .chat-attach-btn:hover { background: #fafafa; color: var(--ink); border-color: var(--muted); }
+  .chat-msg .bubble img.chat-img {
+    max-width: 280px; max-height: 280px; border-radius: 10px; display: block;
+    cursor: zoom-in; margin-top: 6px;
+  }
+  .chat-msg .bubble img.chat-img:first-child { margin-top: 0; }
+  .chat-msg .bubble .chat-file {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: rgba(0,0,0,0.04); border-radius: 10px; text-decoration: none;
+    color: inherit; margin-top: 6px; min-width: 220px; max-width: 320px;
+  }
+  .chat-msg.me .bubble .chat-file { background: rgba(255,255,255,0.18); color: #fff; }
+  .chat-msg .bubble .chat-file:first-child { margin-top: 0; }
+  .chat-msg .bubble .chat-file .fi {
+    width: 36px; height: 36px; border-radius: 8px; background: var(--red); color: #fff;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    font-size: 11px; font-weight: 700;
+  }
+  .chat-msg.me .bubble .chat-file .fi { background: rgba(255,255,255,0.28); }
+  .chat-msg .bubble .chat-file .fname { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chat-msg .bubble .chat-file .fsize { font-size: 11px; opacity: 0.7; }
+  .chat-reveal {
+    align-self: center; background: #fff; border: 1px solid var(--line);
+    color: var(--muted); font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 14px; cursor: pointer; margin: 4px 0 8px;
+    transition: all .15s;
+  }
+  .chat-reveal:hover { background: #fafafa; color: var(--ink); border-color: var(--muted); }
+  .chat-attach-preview {
+    display: flex; gap: 8px; flex-wrap: wrap; padding: 0 18px 8px;
+  }
+  .chat-attach-preview .chip {
+    display: flex; align-items: center; gap: 6px; padding: 4px 8px 4px 4px;
+    background: #f4f4f4; border-radius: 14px; font-size: 12px; max-width: 220px;
+  }
+  .chat-attach-preview .chip img { width: 28px; height: 28px; object-fit: cover; border-radius: 10px; }
+  .chat-attach-preview .chip .fname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chat-attach-preview .chip .x {
+    background: var(--ink); color: #fff; border: none; width: 16px; height: 16px;
+    border-radius: 50%; font-size: 10px; cursor: pointer; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chat-msg .body { position: relative; }
+  .chat-msg .react-btn {
+    position: absolute; top: 18px; opacity: 0; pointer-events: none;
+    background: #fff; border: 1px solid var(--line); border-radius: 16px;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 14px; transition: opacity .15s; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  }
+  .chat-msg:not(.me) .react-btn { right: -34px; }
+  .chat-msg.me .react-btn { left: -34px; }
+  .chat-msg:hover .react-btn { opacity: 1; pointer-events: auto; }
+  .react-popover {
+    position: absolute; top: 50px; background: #fff; border: 1px solid var(--line);
+    border-radius: 22px; padding: 6px 8px; display: flex; gap: 2px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12); z-index: 50;
+  }
+  .chat-msg:not(.me) .react-popover { right: -10px; }
+  .chat-msg.me .react-popover { left: -10px; }
+  .react-popover button {
+    background: transparent; border: none; font-size: 18px; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 50%; transition: background .12s;
+  }
+  .react-popover button:hover { background: #f4f4f4; }
+  .reactions { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; padding: 0 4px; }
+  .reaction {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 2px 8px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    transition: all .12s;
+  }
+  .reaction.mine { background: #fff0f0; border-color: var(--red); color: var(--red); font-weight: 600; }
+  .reaction:hover { background: #fafafa; }
+  .reaction.mine:hover { background: #ffe5e5; }
+  .chat-section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px 6px;
+  }
+  .chat-section-head .label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--muted);
+  }
+  .chat-section-head button {
+    background: transparent; border: none; color: var(--red); font-size: 18px;
+    cursor: pointer; line-height: 1; padding: 0 4px; font-weight: 700;
+  }
+  .member-pick {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+    transition: all .12s;
+  }
+  .member-pick:hover { background: #fafafa; }
+  .member-pick.checked { border-color: var(--red); background: #fff5f5; }
+  .member-pick input { width: 18px; height: 18px; accent-color: var(--red); }
+  .member-pick .av {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--red); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+    overflow: hidden;
+  }
+  .member-pick .av img { width: 100%; height: 100%; object-fit: cover; }
+  .member-pick .info { flex: 1; min-width: 0; }
+  .member-pick .info .nm { font-size: 14px; font-weight: 600; color: var(--ink); }
+  .member-pick .info .em { font-size: 12px; color: var(--muted); }
 
   @media (max-width: 860px) {
     .chat-layout { grid-template-columns: 1fr; height: auto; min-height: auto; }
@@ -992,7 +1108,10 @@
         </div>
         <div class="chat-layout">
           <aside class="chat-sidebar">
-            <div class="chat-section-label">Channels</div>
+            <div class="chat-section-head">
+              <span class="label">Channels</span>
+              <button onclick="openChannelModal()" title="New channel">+</button>
+            </div>
             <div id="chatChannels"></div>
             <div class="chat-section-label">Direct Messages</div>
             <div id="chatDMs"></div>
@@ -1209,6 +1328,21 @@
       <div class="modal-actions">
         <button class="btn-ghost" onclick="closeModal('modalTeam')">Cancel</button>
         <button class="btn-red" onclick="saveTeamMember()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== New Channel Modal ===== -->
+  <div class="modal-bg" id="modalChannel">
+    <div class="modal" style="max-width:480px">
+      <h3 id="chModalTitle">New channel</h3>
+      <label>Channel name</label>
+      <input id="chName" placeholder="e.g. design, ops, clients-2026"/>
+      <label style="margin-top:6px">Members</label>
+      <div id="chMembers" style="max-height:280px;overflow-y:auto;padding:4px 2px"></div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal('modalChannel')">Cancel</button>
+        <button class="btn-red" onclick="saveChannel()">Create channel</button>
       </div>
     </div>
   </div>
@@ -1496,7 +1630,7 @@
   }
 
   /* ===== STORAGE ===== */
-  const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', transactions: 'lm_transactions', payments: 'lm_payments' };
+  const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', channels: 'lm_channels', transactions: 'lm_transactions', payments: 'lm_payments' };
   const AVATAR_COLORS = ['#d30000','#1c1c1e','#16a34a','#f59e0b','#0052D4','#8b5cf6','#ec4899','#0891b2'];
   const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };
   const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
@@ -2603,16 +2737,22 @@
     const reads = load(KEYS.chatRead, {});
     const myReads = reads[user.id] || {};
 
-    // Channels (just General for now)
+    // Channels — general (always) + custom channels where I'm a member
     const chHost = document.getElementById('chatChannels');
-    const generalUnread = msgs.filter(m => m.channel === 'general' && m.fromId !== user.id && (myReads['general'] || 0) < m.ts).length;
-    chHost.innerHTML = `
-      <div class="chat-channel ${activeChannel === 'general' ? 'active' : ''}" onclick="openChannel('general')">
-        <span class="ic">${icon('hash', 16)}</span>
-        <span class="name">general</span>
-        ${generalUnread ? `<span class="badge">${generalUnread}</span>` : ''}
-      </div>
-    `;
+    const customChannels = load(KEYS.channels, []).filter(c => !c.members || c.members.length === 0 || c.members.includes(user.id));
+    const allChannels = [{ id: 'general', name: 'general', members: null }, ...customChannels];
+    chHost.innerHTML = allChannels.map(c => {
+      const unread = msgs.filter(m => m.channel === c.id && m.fromId !== user.id && (myReads[c.id] || 0) < m.ts).length;
+      const delBtn = c.id !== 'general' ? `<button onclick="event.stopPropagation();deleteChannel('${esc(c.id)}')" style="background:transparent;border:none;color:var(--muted);cursor:pointer;padding:0 4px;font-size:14px" title="Delete channel">×</button>` : '';
+      return `
+        <div class="chat-channel ${activeChannel === c.id ? 'active' : ''}" onclick="openChannel('${esc(c.id)}')">
+          <span class="ic">${icon('hash', 16)}</span>
+          <span class="name">${esc(c.name)}</span>
+          ${unread ? `<span class="badge">${unread}</span>` : ''}
+          ${delBtn}
+        </div>
+      `;
+    }).join('');
 
     // DMs
     const dmHost = document.getElementById('chatDMs');
@@ -2647,11 +2787,19 @@
     if (activeChannel === 'general') {
       title = '# general';
       subtitle = `${team.length} member${team.length>1?'s':''} — visible to the whole team`;
-    } else {
+    } else if (activeChannel.startsWith('dm:')) {
       const otherId = activeChannel.replace('dm:','').split('-').map(Number).find(id => id !== user.id);
       const other = team.find(t => t.id === otherId) || { name: 'Unknown' };
       title = other.name;
       subtitle = `Direct message · ${other.email || ''}`;
+    } else {
+      const ch = customChannels.find(c => c.id === activeChannel);
+      if (ch) {
+        title = '# ' + ch.name;
+        subtitle = `${ch.members.length} member${ch.members.length>1?'s':''} · private channel`;
+      } else {
+        title = 'Channel'; subtitle = '';
+      }
     }
     const visible = msgs.filter(m => m.channel === activeChannel).sort((a,b) => a.ts - b.ts);
 
@@ -2660,14 +2808,20 @@
     reads[user.id][activeChannel] = Date.now();
     save(KEYS.chatRead, reads);
 
+    const todayStr = new Date().toDateString();
+    const showOld = revealedHistory[activeChannel];
+    const oldMsgs = visible.filter(m => new Date(m.ts).toDateString() !== todayStr);
+    const todayMsgs = visible.filter(m => new Date(m.ts).toDateString() === todayStr);
+    const renderList = showOld ? visible : todayMsgs;
+    const oldHiddenCount = showOld ? 0 : oldMsgs.length;
+
     let lastDay = '';
-    const msgHTML = visible.map(m => {
+    const renderOne = (m) => {
       const day = new Date(m.ts).toDateString();
       let dayHeader = '';
       if (day !== lastDay) {
-        const today = new Date().toDateString();
         const ystr = new Date(Date.now()-86400000).toDateString();
-        const label = day === today ? 'Today' : day === ystr ? 'Yesterday' : new Date(m.ts).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+        const label = day === todayStr ? 'Today' : day === ystr ? 'Yesterday' : new Date(m.ts).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
         dayHeader = `<div class="chat-day">${label}</div>`;
         lastDay = day;
       }
@@ -2678,45 +2832,146 @@
         ? `<div class="chat-mini-avatar" style="width:32px;height:32px;font-size:13px"><img src="${escUrl(m.fromAvatar)}" alt=""/></div>`
         : `<div class="chat-mini-avatar" style="width:32px;height:32px;font-size:13px;background:${safeColor}">${esc(initial)}</div>`;
       const time = new Date(m.ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      const attHTML = (m.attachments || []).map(a => {
+        if (a.type === 'image') {
+          return `<img class="chat-img" src="${escUrl(a.dataUrl)}" alt="${esc(a.name||'')}" onclick="window.open('${escUrl(a.dataUrl)}','_blank')"/>`;
+        }
+        const ext = (a.name || '').split('.').pop().slice(0,4).toUpperCase() || 'FILE';
+        const sizeKB = a.size ? (a.size > 1024*1024 ? (a.size/1024/1024).toFixed(1)+' MB' : Math.round(a.size/1024)+' KB') : '';
+        return `<a class="chat-file" href="${escUrl(a.dataUrl)}" download="${esc(a.name||'file')}"><div class="fi">${esc(ext)}</div><div style="min-width:0"><div class="fname">${esc(a.name||'file')}</div><div class="fsize">${esc(sizeKB)}</div></div></a>`;
+      }).join('');
+      const textHTML = m.text ? esc(m.text) : '';
+      const bubbleInner = textHTML && attHTML ? `${attHTML}<div style="margin-top:6px">${textHTML}</div>` : (attHTML || textHTML);
+      const reacts = m.reactions || {};
+      const reactKeys = Object.keys(reacts).filter(e => (reacts[e] || []).length);
+      const reactionsHTML = reactKeys.length ? `<div class="reactions">${reactKeys.map(e => {
+        const ids = reacts[e]; const mine = ids.includes(user.id);
+        return `<span class="reaction ${mine?'mine':''}" onclick="toggleReaction('${m.id}','${esc(e)}')">${esc(e)} <b>${ids.length}</b></span>`;
+      }).join('')}</div>` : '';
+      const popoverId = `pop-${String(m.id).replace(/[^0-9]/g,'')}`;
       return `
         ${dayHeader}
         <div class="chat-msg ${isMe ? 'me' : ''}">
           ${av}
           <div class="body">
             <div class="meta">${isMe ? 'You' : esc(m.fromName)} · ${time}</div>
-            <div class="bubble">${esc(m.text)}</div>
+            <div class="bubble">${bubbleInner}</div>
+            ${reactionsHTML}
+            <button class="react-btn" onclick="toggleReactPopover('${popoverId}')" title="Add reaction">😊</button>
+            <div class="react-popover" id="${popoverId}" style="display:none">
+              ${['👍','❤️','😂','🎉','👀','🙏','🔥'].map(e => `<button onclick="toggleReaction('${m.id}','${e}');toggleReactPopover('${popoverId}')">${e}</button>`).join('')}
+            </div>
           </div>
         </div>
       `;
-    }).join('');
+    };
+    const revealHTML = oldHiddenCount
+      ? `<button class="chat-reveal" onclick="revealHistory('${esc(activeChannel)}')">Show ${oldHiddenCount} earlier message${oldHiddenCount>1?'s':''}</button>`
+      : '';
+    const msgHTML = revealHTML + renderList.map(renderOne).join('');
 
+    const headerIconKind = activeChannel.startsWith('dm:') ? 'chat' : 'hash';
+    const editChAction = (activeChannel !== 'general' && !activeChannel.startsWith('dm:'))
+      ? `<button class="ch-action" onclick="openChannelModal('${esc(activeChannel)}')">Members</button>` : '';
     document.getElementById('chatMain').innerHTML = `
-      <div class="chat-header">
-        <span style="color:var(--red);display:inline-flex">${icon(activeChannel === 'general' ? 'hash' : 'chat', 18)}</span>
+      <div class="chat-header dark">
+        <span style="color:#fff;display:inline-flex;opacity:0.85">${icon(headerIconKind, 18)}</span>
         <div style="flex:1;min-width:0">
           <div class="title">${esc(title)}</div>
           <div class="sub">${esc(subtitle)}</div>
         </div>
+        ${editChAction}
       </div>
       <div class="chat-messages" id="chatMessages">
         ${visible.length ? msgHTML : '<div class="chat-empty">No messages yet — say hi 👋</div>'}
       </div>
+      <div class="chat-attach-preview" id="chatAttachPreview" style="display:none"></div>
       <div class="chat-input">
+        <input type="file" id="chatImgInput" accept="image/*" multiple style="display:none" onchange="addChatAttachments(event,'image')"/>
+        <input type="file" id="chatFileInput" multiple style="display:none" onchange="addChatAttachments(event,'file')"/>
+        <button class="chat-attach-btn" onclick="document.getElementById('chatImgInput').click()" title="Attach photo">${icon('image', 18) || '📷'}</button>
+        <button class="chat-attach-btn" onclick="document.getElementById('chatFileInput').click()" title="Attach document">${icon('paperclip', 18) || '📎'}</button>
         <textarea id="chatInput" placeholder="Message ${esc(activeChannel === 'general' ? '#general' : (team.find(t => t.id === Number(activeChannel.replace('dm:','').split('-').find(id => Number(id) !== user.id)))?.name || ''))}…"
           oninput="autoGrow(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
         <button class="chat-send" onclick="sendMessage()" title="Send">${icon('send', 16)}</button>
       </div>
     `;
+    renderAttachPreview();
     const mc = document.getElementById('chatMessages');
     if (mc) mc.scrollTop = mc.scrollHeight;
     refresh(); // update sidebar badge
   }
   function autoGrow(t) { t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; }
   function openChannel(id) { activeChannel = id; renderChat(); }
+
+  const revealedHistory = {};
+  let pendingAttachments = [];
+  function revealHistory(channel) { revealedHistory[channel] = true; renderChat(); }
+
+  function renderAttachPreview() {
+    const host = document.getElementById('chatAttachPreview');
+    if (!host) return;
+    if (!pendingAttachments.length) { host.style.display = 'none'; host.innerHTML = ''; return; }
+    host.style.display = 'flex';
+    host.innerHTML = pendingAttachments.map((a, i) => {
+      const thumb = a.type === 'image'
+        ? `<img src="${escUrl(a.dataUrl)}" alt=""/>`
+        : `<div style="width:28px;height:28px;border-radius:6px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">${esc((a.name||'').split('.').pop().slice(0,3).toUpperCase()||'FILE')}</div>`;
+      return `<div class="chip">${thumb}<span class="fname">${esc(a.name || 'file')}</span><button class="x" onclick="removeAttachment(${i})">×</button></div>`;
+    }).join('');
+  }
+  function removeAttachment(i) { pendingAttachments.splice(i, 1); renderAttachPreview(); }
+
+  async function addChatAttachments(event, kind) {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    for (const f of files) {
+      if (f.size > 5 * 1024 * 1024) { toast({ type: 'error', msg: `${f.name} is over 5 MB — too large to send.` }); continue; }
+      try {
+        const dataUrl = kind === 'image'
+          ? await resizeImageFile(f, 1200)
+          : await readFileAsDataUrl(f);
+        pendingAttachments.push({ type: kind, name: f.name, mime: f.type, size: f.size, dataUrl });
+      } catch (e) { toast({ type: 'error', msg: `Couldn't read ${f.name}` }); }
+    }
+    renderAttachPreview();
+  }
+  function readFileAsDataUrl(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+  function resizeImageFile(file, maxDim) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            const scale = maxDim / Math.max(width, height);
+            width = Math.round(width * scale); height = Math.round(height * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+          res(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = rej;
+        img.src = r.result;
+      };
+      r.onerror = rej;
+      r.readAsDataURL(file);
+    });
+  }
+
   function sendMessage() {
     const ta = document.getElementById('chatInput');
     const text = (ta?.value || '').trim();
-    if (!text) return;
+    if (!text && !pendingAttachments.length) return;
     const me = load(KEYS.team, []).find(x => x.id === user.id) || user;
     const msgs = load(KEYS.messages, []);
     msgs.push({
@@ -2727,12 +2982,95 @@
       fromColor: me.color,
       fromAvatar: me.avatar || '',
       text,
+      attachments: pendingAttachments.slice(),
       ts: Date.now()
     });
     save(KEYS.messages, msgs);
+    pendingAttachments = [];
     ta.value = ''; autoGrow(ta);
     renderChat();
   }
+
+  let editingChannelId = null;
+  function openChannelModal(channelId) {
+    editingChannelId = channelId || null;
+    const team = load(KEYS.team, []);
+    const existing = channelId ? load(KEYS.channels, []).find(c => c.id === channelId) : null;
+    document.getElementById('chModalTitle').textContent = existing ? 'Edit channel members' : 'New channel';
+    document.getElementById('chName').value = existing ? existing.name : '';
+    document.getElementById('chName').disabled = !!existing;
+    const selected = new Set(existing ? existing.members : [user.id]);
+    const host = document.getElementById('chMembers');
+    host.innerHTML = team.map(t => {
+      const initial = (t.name || '?').slice(0,1).toUpperCase();
+      const safeColor = /^#[0-9a-f]{3,8}$/i.test(t.color || '') ? t.color : '#d30000';
+      const av = t.avatar
+        ? `<div class="av"><img src="${escUrl(t.avatar)}" alt=""/></div>`
+        : `<div class="av" style="background:${safeColor}">${esc(initial)}</div>`;
+      const isMe = t.id === user.id;
+      const checked = selected.has(t.id);
+      return `<label class="member-pick ${checked?'checked':''}" data-id="${t.id}">
+        <input type="checkbox" ${checked?'checked':''} ${isMe?'disabled':''} onchange="this.closest('.member-pick').classList.toggle('checked', this.checked)"/>
+        ${av}
+        <div class="info"><div class="nm">${esc(t.name)}${isMe?' (you)':''}</div><div class="em">${esc(t.email||'')}</div></div>
+      </label>`;
+    }).join('') || '<div style="color:var(--muted);font-size:13px;padding:12px">Add team members first to invite them.</div>';
+    document.querySelector('#modalChannel .modal-actions .btn-red').textContent = existing ? 'Save members' : 'Create channel';
+    document.getElementById('modalChannel').classList.add('show');
+  }
+  function saveChannel() {
+    const name = document.getElementById('chName').value.trim();
+    if (!editingChannelId && !name) { toast({ type: 'error', msg: 'Channel name is required.' }); return; }
+    const memberIds = Array.from(document.querySelectorAll('#chMembers .member-pick'))
+      .filter(el => el.querySelector('input').checked).map(el => Number(el.dataset.id));
+    if (!memberIds.includes(user.id)) memberIds.push(user.id);
+    const channels = load(KEYS.channels, []);
+    if (editingChannelId) {
+      const c = channels.find(x => x.id === editingChannelId);
+      if (c) { c.members = memberIds; save(KEYS.channels, channels); toast({ msg: 'Members updated' }); }
+    } else {
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') || ('ch-' + Date.now());
+      const id = 'ch:' + slug + '-' + Date.now().toString(36);
+      channels.push({ id, name, members: memberIds, createdBy: user.id, ts: Date.now() });
+      save(KEYS.channels, channels);
+      activeChannel = id;
+      toast({ title: 'Channel created', msg: '#' + name });
+    }
+    closeModal('modalChannel');
+    editingChannelId = null;
+    renderChat();
+  }
+  async function deleteChannel(id) {
+    const ch = load(KEYS.channels, []).find(c => c.id === id); if (!ch) return;
+    const ok = await confirmDialog({ title: 'Delete channel?', msg: `Remove #${ch.name} and all its messages? This cannot be undone.`, okText: 'Delete' });
+    if (!ok) return;
+    save(KEYS.channels, load(KEYS.channels, []).filter(c => c.id !== id));
+    save(KEYS.messages, load(KEYS.messages, []).filter(m => m.channel !== id));
+    if (activeChannel === id) activeChannel = 'general';
+    renderChat();
+  }
+
+  function toggleReactPopover(id) {
+    document.querySelectorAll('.react-popover').forEach(p => { if (p.id !== id) p.style.display = 'none'; });
+    const el = document.getElementById(id); if (!el) return;
+    el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+  }
+  function toggleReaction(msgId, emoji) {
+    const msgs = load(KEYS.messages, []);
+    const m = msgs.find(x => String(x.id) === String(msgId)); if (!m) return;
+    m.reactions = m.reactions || {};
+    m.reactions[emoji] = m.reactions[emoji] || [];
+    const i = m.reactions[emoji].indexOf(user.id);
+    if (i >= 0) m.reactions[emoji].splice(i, 1); else m.reactions[emoji].push(user.id);
+    if (!m.reactions[emoji].length) delete m.reactions[emoji];
+    save(KEYS.messages, msgs);
+    renderChat();
+  }
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.react-btn') && !e.target.closest('.react-popover')) {
+      document.querySelectorAll('.react-popover').forEach(p => p.style.display = 'none');
+    }
+  });
 
   /* ===== FINANCE (localStorage version — no backend) ===== */
   const fmt$ = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
