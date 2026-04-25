@@ -11,6 +11,10 @@ import 'dotenv/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { Pool } = pg;
+// Parse BIGINT (oid 20) and NUMERIC (oid 1700) as JS numbers so the front-end
+// can compare IDs with === without string/number mismatches.
+pg.types.setTypeParser(20, v => v == null ? null : parseInt(v, 10));
+pg.types.setTypeParser(1700, v => v == null ? null : parseFloat(v));
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'change-me-in-production';

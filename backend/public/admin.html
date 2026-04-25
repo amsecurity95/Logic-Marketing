@@ -779,11 +779,21 @@
   }
   @media (max-width: 860px) {
     .hamburger { display: flex; }
-    .topbar { grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 16px; }
-    .top-logo img { height: 30px; }
+    .topbar {
+      grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 16px;
+      background: #0d0d0d; border-bottom-color: var(--red);
+    }
+    .hamburger span, .hamburger span::before, .hamburger span::after { background: #fff; }
+    .hamburger:hover { background: rgba(255,255,255,0.08); }
+    .top-logo img {
+      height: 30px;
+      /* Force pure white on the dark mobile bar regardless of source color. */
+      filter: brightness(0) invert(1);
+    }
     .top-search { display: none; }
     .top-user .name { display: none; }
-    .logout-btn { padding: 6px 10px; font-size: 11px; }
+    .logout-btn { padding: 6px 10px; font-size: 11px; color: rgba(255,255,255,0.65); border-color: rgba(255,255,255,0.15); }
+    .logout-btn:hover { color: #fff; border-color: var(--red); }
     .layout { grid-template-columns: 1fr; }
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0;
