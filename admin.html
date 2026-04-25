@@ -1217,20 +1217,39 @@
   <div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
   <aside class="drawer" id="clientDrawer"></aside>
 
+  <style>
+    .eq-photo-uploader { position: relative; cursor: pointer; width: 96px; height: 96px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1px dashed var(--line); }
+    .eq-photo-preview { width: 100%; height: 100%; background: #f4f5f7; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+    .eq-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .eq-photo-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .eq-photo-uploader:hover .eq-photo-overlay { opacity: 1; }
+  </style>
   <div class="modal-bg" id="modalEq">
-    <div class="modal" style="max-width:520px">
-      <h3>Add Equipment</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div><label>Item Name</label><input id="eName" placeholder="Shotgun Microphone"/></div>
-        <div><label>Category</label>
-          <select id="eCategory" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:14px;background:#fff"></select>
+    <div class="modal" style="max-width:540px">
+      <h3 id="eqModalTitle">Add Equipment</h3>
+      <div style="display:flex;gap:18px;align-items:flex-start;margin-bottom:14px">
+        <div class="eq-photo-uploader" onclick="document.getElementById('ePhotoInput').click()" title="Click to upload a photo">
+          <div id="eqPhotoPreview" class="eq-photo-preview" data-icon="upload" data-icon-size="22"></div>
+          <div class="eq-photo-overlay" data-icon="upload" data-icon-size="20"></div>
         </div>
+        <input type="file" id="ePhotoInput" accept="image/*" style="display:none" onchange="handleEqPhoto(event)"/>
+        <div style="flex:1">
+          <label>Item Name</label><input id="eName" placeholder="Shotgun Microphone"/>
+          <label>Category</label>
+          <select id="eCategory" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:0;background:#fff"></select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div><label>Price (USD)</label><input id="ePrice" type="number" placeholder="500"/></div>
         <div><label>Saved So Far (USD)</label><input id="eSaved" type="number" placeholder="0"/></div>
       </div>
-      <label>Image URL (optional — overrides category icon)</label>
-      <input id="eImg" placeholder="https://…"/>
-      <div class="modal-actions">
+      <input type="hidden" id="eImg"/>
+      <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
+        <button type="button" class="btn-ghost" id="eqRemovePhoto" onclick="clearEqPhoto()" style="font-size:12px;padding:6px 10px;display:none">Remove photo</button>
+        <span style="color:var(--muted);font-size:12px">Or paste URL:</span>
+        <input type="url" id="eImgUrl" placeholder="https://…" style="flex:1;padding:8px 10px;font-size:12px;border:1px solid var(--line);border-radius:6px"/>
+      </div>
+      <div class="modal-actions" style="margin-top:18px">
         <button class="btn-ghost" onclick="closeModal('modalEq')">Cancel</button>
         <button class="btn-red" onclick="saveEq()">Save</button>
       </div>
@@ -2011,7 +2030,8 @@
               <span>$${remain.toLocaleString()} to go</span>
             </div>
             <div class="eq-actions">
-              <button class="btn-outline" onclick="addSavings(${e.id})">+ Add savings</button>
+              <button class="btn-outline" onclick="addSavings(${e.id})">+ Save</button>
+              <button class="btn-ghost" onclick="editEq(${e.id})" title="Edit" style="display:inline-flex;align-items:center;justify-content:center;color:var(--muted)">Edit</button>
               <button class="btn-ghost" onclick="deleteEq(${e.id})" title="Remove" style="display:inline-flex;align-items:center;justify-content:center;color:var(--muted)">${icon('trash', 14)}</button>
             </div>
           </div>
@@ -2039,7 +2059,8 @@
               <span style="color:var(--good);font-weight:600">${esc(acquiredLabel)}</span>
             </div>
             <div class="eq-actions">
-              <button class="btn-ghost" onclick="moveBackToWishlist(${e.id})" style="font-size:12px">Move to wishlist</button>
+              <button class="btn-outline" onclick="editEq(${e.id})" style="font-size:12px">Edit</button>
+              <button class="btn-ghost" onclick="moveBackToWishlist(${e.id})" style="font-size:12px">↩</button>
               <button class="btn-ghost" onclick="deleteEq(${e.id})" title="Remove" style="display:inline-flex;align-items:center;justify-content:center;color:var(--muted)">${icon('trash', 14)}</button>
             </div>
           </div>
@@ -2047,11 +2068,70 @@
       `;
     }).join('') : `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:32px;background:#fafafa;border-radius:10px;border:1px dashed var(--line)">Nothing here yet — fully fund a wishlist item and it'll appear in your available gear.</div>`;
   }
+  let editingEqId = null;
   function openEqModal() {
+    editingEqId = null;
+    document.getElementById('eqModalTitle').textContent = 'Add Equipment';
     const sel = document.getElementById('eCategory');
     sel.innerHTML = EQ_CATEGORIES.map(c => `<option value="${c.k}">${c.label}</option>`).join('');
-    ['eName','eImg','ePrice','eSaved'].forEach(id => document.getElementById(id).value = '');
+    ['eName','eImg','ePrice','eSaved','eImgUrl'].forEach(id => document.getElementById(id).value = '');
+    setEqPhotoPreview('');
     document.getElementById('modalEq').classList.add('show');
+  }
+  function editEq(id) {
+    const e = load(KEYS.equipment, []).find(x => x.id === id); if (!e) return;
+    editingEqId = id;
+    document.getElementById('eqModalTitle').textContent = 'Edit Equipment';
+    const sel = document.getElementById('eCategory');
+    sel.innerHTML = EQ_CATEGORIES.map(c => `<option value="${c.k}"${c.k === e.category ? ' selected' : ''}>${c.label}</option>`).join('');
+    document.getElementById('eName').value = e.name || '';
+    document.getElementById('ePrice').value = e.price || '';
+    document.getElementById('eSaved').value = e.saved || 0;
+    document.getElementById('eImg').value = e.img || '';
+    document.getElementById('eImgUrl').value = e.img && !e.img.startsWith('data:') ? e.img : '';
+    setEqPhotoPreview(e.img || '');
+    document.getElementById('modalEq').classList.add('show');
+  }
+  function setEqPhotoPreview(src) {
+    const host = document.getElementById('eqPhotoPreview');
+    const removeBtn = document.getElementById('eqRemovePhoto');
+    if (src) {
+      host.innerHTML = '';
+      const img = document.createElement('img'); img.src = src; img.alt = '';
+      host.appendChild(img);
+      removeBtn.style.display = '';
+    } else {
+      host.innerHTML = icon('upload', 22);
+      removeBtn.style.display = 'none';
+    }
+  }
+  function handleEqPhoto(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast({ type: 'error', msg: 'Please select an image file.' }); return; }
+    if (file.size > 4 * 1024 * 1024) { toast({ type: 'error', msg: 'Image must be under 4 MB.' }); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 600;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        document.getElementById('eImg').value = dataUrl;
+        document.getElementById('eImgUrl').value = '';
+        setEqPhotoPreview(dataUrl);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function clearEqPhoto() {
+    document.getElementById('eImg').value = '';
+    document.getElementById('eImgUrl').value = '';
+    setEqPhotoPreview('');
   }
   function moveBackToWishlist(id) {
     const list = load(KEYS.equipment, []);
@@ -2066,16 +2146,29 @@
     const price = parseFloat(document.getElementById('ePrice').value);
     if (!name || !price) { toast({ type: 'error', msg: 'Name and price are required.' }); return; }
     const saved = parseFloat(document.getElementById('eSaved').value) || 0;
+    const uploaded = document.getElementById('eImg').value.trim();
+    const urlField = document.getElementById('eImgUrl').value.trim();
+    const img = uploaded || urlField;
+    const category = document.getElementById('eCategory').value || 'other';
     const list = load(KEYS.equipment, []);
-    const item = {
-      id: Date.now(), name, img: document.getElementById('eImg').value.trim(),
-      price, saved, category: document.getElementById('eCategory').value || 'other'
-    };
-    if (saved >= price) item.acquiredAt = Date.now();
-    list.unshift(item);
-    save(KEYS.equipment, list);
-    closeModal('modalEq'); refresh();
-    toast({ title: saved >= price ? 'Added to available gear' : 'Equipment added', msg: `${name} added to ${saved >= price ? 'inventory' : 'wishlist'}.` });
+    if (editingEqId) {
+      const it = list.find(x => x.id === editingEqId);
+      if (it) {
+        it.name = name; it.price = price; it.saved = saved; it.img = img; it.category = category;
+        if (saved >= price && !it.acquiredAt) it.acquiredAt = Date.now();
+        if (saved < price) delete it.acquiredAt;
+      }
+      save(KEYS.equipment, list);
+      closeModal('modalEq'); refresh();
+      toast({ title: 'Equipment updated', msg: name });
+    } else {
+      const item = { id: Date.now(), name, img, price, saved, category };
+      if (saved >= price) item.acquiredAt = Date.now();
+      list.unshift(item);
+      save(KEYS.equipment, list);
+      closeModal('modalEq'); refresh();
+      toast({ title: saved >= price ? 'Added to available gear' : 'Equipment added', msg: `${name} added to ${saved >= price ? 'inventory' : 'wishlist'}.` });
+    }
   }
   async function addSavings(id) {
     const it = load(KEYS.equipment, []).find(e => e.id === id);
