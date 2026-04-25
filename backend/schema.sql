@@ -117,3 +117,32 @@ CREATE TABLE IF NOT EXISTS clicks (
   href       TEXT DEFAULT ''
 );
 CREATE INDEX IF NOT EXISTS idx_clicks_ts ON clicks(ts);
+
+-- Finance: company-wide revenue + expenses
+CREATE TABLE IF NOT EXISTS transactions (
+  id          BIGSERIAL PRIMARY KEY,
+  kind        TEXT NOT NULL,                       -- 'revenue' | 'expense'
+  amount      NUMERIC NOT NULL,
+  currency    TEXT NOT NULL DEFAULT 'USD',
+  description TEXT NOT NULL,
+  category    TEXT DEFAULT '',                     -- e.g. 'project', 'software', 'rent', 'travel'
+  client_id   BIGINT REFERENCES clients(id) ON DELETE SET NULL,
+  occurred_on DATE DEFAULT CURRENT_DATE,
+  created_by  BIGINT REFERENCES team(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_transactions_kind_date ON transactions(kind, occurred_on);
+
+-- Payroll: payments to team members
+CREATE TABLE IF NOT EXISTS payments (
+  id          BIGSERIAL PRIMARY KEY,
+  team_id     BIGINT NOT NULL REFERENCES team(id) ON DELETE CASCADE,
+  amount      NUMERIC NOT NULL,
+  currency    TEXT NOT NULL DEFAULT 'USD',
+  period      TEXT DEFAULT '',                     -- e.g. '2026-04' or 'one-off'
+  description TEXT DEFAULT '',
+  paid_on     DATE DEFAULT CURRENT_DATE,
+  paid_by     BIGINT REFERENCES team(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_payments_team_date ON payments(team_id, paid_on);

@@ -870,6 +870,7 @@
       <div class="nav-item" data-page="equipment"><span class="icon" data-icon="camera"></span>Equipment</div>
       <div class="nav-item" data-page="inbox"><span class="icon" data-icon="mail"></span>Inbox <span class="badge" id="navInbox">0</span></div>
       <div class="nav-item" data-page="messages"><span class="icon" data-icon="chat"></span>Messages <span class="badge" id="navMsgs">0</span></div>
+      <div class="nav-item" data-page="finance"><span class="icon" data-icon="dollar"></span>Finance</div>
       <div class="nav-section">Account</div>
       <div class="nav-item" data-page="team"><span class="icon" data-icon="shield"></span>Team <span class="badge" id="navTeam">0</span></div>
       <div class="nav-item" data-page="profile"><span class="icon" data-icon="user"></span>Profile</div>
@@ -1023,6 +1024,15 @@
         </div>
       </section>
 
+      <!-- FINANCE -->
+      <section class="page" id="page-finance">
+        <div class="page-head">
+          <div><h2 id="finTitle">Finance</h2><div class="sub" id="finSub">Revenue, expenses, payroll.</div></div>
+          <div id="finActions" style="display:flex;gap:8px"></div>
+        </div>
+        <div id="finBody"></div>
+      </section>
+
       <!-- TEAM -->
       <section class="page" id="page-team">
         <div class="page-head">
@@ -1156,6 +1166,52 @@
     </div>
   </div>
 
+  <!-- ===== Add Transaction Modal ===== -->
+  <div class="modal-bg" id="modalTxn">
+    <div class="modal" style="max-width:520px">
+      <h3 id="txnTitle">Add Transaction</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label>Type</label>
+          <select id="txKind" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:14px;background:#fff">
+            <option value="revenue">Revenue (money in)</option>
+            <option value="expense">Expense (money out)</option>
+          </select>
+        </div>
+        <div><label>Amount (USD)</label><input id="txAmount" type="number" step="0.01" placeholder="500.00"/></div>
+        <div style="grid-column:1/-1"><label>Description</label><input id="txDesc" placeholder="e.g. Chambana Rides — landing page deposit"/></div>
+        <div><label>Category</label><input id="txCategory" placeholder="project, software, rent…"/></div>
+        <div><label>Date</label><input id="txDate" type="date"/></div>
+        <div style="grid-column:1/-1"><label>Linked client (optional)</label>
+          <select id="txClient" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:14px;background:#fff"></select>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal('modalTxn')">Cancel</button>
+        <button class="btn-red" onclick="saveTransaction()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Add Payment Modal ===== -->
+  <div class="modal-bg" id="modalPay">
+    <div class="modal" style="max-width:520px">
+      <h3>Record Payment to Team Member</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="grid-column:1/-1"><label>Team member</label>
+          <select id="payTeam" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:14px;background:#fff"></select>
+        </div>
+        <div><label>Amount (USD)</label><input id="payAmount" type="number" step="0.01" placeholder="2000.00"/></div>
+        <div><label>Period (optional)</label><input id="payPeriod" placeholder="2026-04 or one-off"/></div>
+        <div style="grid-column:1/-1"><label>Description</label><input id="payDesc" placeholder="Salary, bonus, contract work…"/></div>
+        <div><label>Paid on</label><input id="payDate" type="date"/></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeModal('modalPay')">Cancel</button>
+        <button class="btn-red" onclick="savePayment()">Record</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Add Team Member Modal ===== -->
   <div class="modal-bg" id="modalTeam">
     <div class="modal" style="max-width:520px">
@@ -1258,7 +1314,10 @@
     chat: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
     send: '<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
     upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
-    hash: '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>'
+    hash: '<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
+    dollar: '<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+    wallet: '<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0-2 2c0 1.1.9 2 2 2h4v-4h-4z"/>',
+    trending: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'
   };
   function icon(name, size = 20, stroke = 2) {
     return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.package}</svg>`;
@@ -1515,6 +1574,7 @@
     if (p === 'team') renderTeam();
     if (p === 'profile') applyUserToUI();
     if (p === 'messages') renderChat();
+    if (p === 'finance') renderFinance();
     window.scrollTo(0,0);
   }
 
@@ -2672,6 +2732,209 @@
       await api('/api/messages', { method: 'POST', body: { channel: activeChannel, text } });
       await renderChat();
     } catch(_) {}
+  }
+
+  /* ===== FINANCE ===== */
+  const fmt$ = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  async function renderFinance() {
+    const isAdmin = (state.me?.role || user?.role) === 'Admin';
+    const head = document.getElementById('finActions');
+    const body = document.getElementById('finBody');
+    document.getElementById('finTitle').textContent = isAdmin ? 'Finance' : 'My Earnings';
+    document.getElementById('finSub').textContent = isAdmin
+      ? 'Revenue, expenses, payroll. Add entries manually as money comes in or goes out.'
+      : 'Your payment history.';
+
+    if (!isAdmin) {
+      head.innerHTML = '';
+      try {
+        const data = await api('/api/finance/my-earnings');
+        body.innerHTML = `
+          <div class="kpi-grid" style="grid-template-columns:1fr">
+            <div class="kpi" style="text-align:center;padding:32px">
+              <div class="label">Total earned to date</div>
+              <div class="value" style="font-size:48px;color:var(--good);margin:8px 0">${esc(fmt$(data.total))}</div>
+              <div class="delta">${data.history.length} payment${data.history.length===1?'':'s'} on record</div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Payment history</h3>
+            ${data.history.length ? `
+              <table>
+                <thead><tr><th>Date</th><th>Amount</th><th>Period</th><th>Description</th></tr></thead>
+                <tbody>${data.history.map(p => `
+                  <tr>
+                    <td>${esc(new Date(p.paid_on).toLocaleDateString())}</td>
+                    <td><b style="color:var(--good)">${esc(fmt$(p.amount))}</b></td>
+                    <td>${esc(p.period || '—')}</td>
+                    <td>${esc(p.description || '—')}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>` : `<div style="color:var(--muted);text-align:center;padding:30px">No payments recorded yet.</div>`}
+          </div>`;
+      } catch(_) {}
+      return;
+    }
+
+    // Admin view
+    head.innerHTML = `
+      <button class="btn-outline" onclick="openTxnModal('expense')">+ Expense</button>
+      <button class="btn-outline" onclick="openPayModal()">+ Payment</button>
+      <button class="btn-red" onclick="openTxnModal('revenue')">+ Revenue</button>
+    `;
+    body.innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px">Loading…</div>`;
+    let overview, txns, pays;
+    try {
+      [overview, txns, pays] = await Promise.all([
+        api('/api/finance/overview'),
+        api('/api/finance/transactions'),
+        api('/api/finance/payments')
+      ]);
+    } catch(_) { return; }
+
+    const netClass = overview.netProfit >= 0 ? 'good' : 'down';
+    const monthlyMax = Math.max(1, ...overview.monthly.flatMap(m => [m.revenue, m.expense]));
+    const monthlyHTML = overview.monthly.length
+      ? overview.monthly.map(m => `
+          <div style="display:flex;align-items:flex-end;gap:4px;height:80px">
+            <div style="flex:1;background:var(--good);border-radius:3px 3px 0 0;height:${(m.revenue/monthlyMax)*100}%" title="Revenue ${fmt$(m.revenue)}"></div>
+            <div style="flex:1;background:var(--red);border-radius:3px 3px 0 0;height:${(m.expense/monthlyMax)*100}%" title="Expenses ${fmt$(m.expense)}"></div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">${esc(m.month.slice(5))}</div>`).join('')
+      : '<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;grid-column:1/-1">No transactions yet.</div>';
+
+    body.innerHTML = `
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">Total Revenue</div><div class="value" style="color:var(--good)">${esc(fmt$(overview.revenue))}</div><div class="delta">All-time</div></div>
+        <div class="kpi"><div class="label">Total Expenses</div><div class="value" style="color:var(--red)">${esc(fmt$(overview.expenses))}</div><div class="delta">All-time</div></div>
+        <div class="kpi"><div class="label">Payroll Paid</div><div class="value">${esc(fmt$(overview.payroll))}</div><div class="delta">${overview.byMember.filter(m=>m.paid>0).length} member(s)</div></div>
+        <div class="kpi"><div class="label">Net Profit</div><div class="value ${netClass==='down'?'':''}" style="color:${overview.netProfit>=0?'var(--good)':'var(--red)'}">${esc(fmt$(overview.netProfit))}</div><div class="delta ${netClass}">Revenue − Expenses − Payroll</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Last 12 Months <span style="font-size:11px;font-weight:500;color:var(--muted)">— green=revenue, red=expense</span></h3>
+          <div style="display:grid;grid-template-columns:repeat(${Math.max(1,overview.monthly.length)},1fr);gap:8px;align-items:end;min-height:120px">
+            ${monthlyHTML}
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Paid by Team Member</h3>
+          ${overview.byMember.length ? overview.byMember.map(m => {
+            const safeColor = /^#[0-9a-f]{3,8}$/i.test(m.color || '') ? m.color : '#d30000';
+            const init = (m.name || '?').slice(0,1).toUpperCase();
+            const av = m.avatar_url ? `<img src="${escUrl(m.avatar_url)}" style="width:100%;height:100%;object-fit:cover"/>` : esc(init);
+            return `
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">
+                <div class="chat-mini-avatar" style="background:${safeColor};width:36px;height:36px;font-size:14px">${av}</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:14px;font-weight:600">${esc(m.name)}</div>
+                  <div style="font-size:12px;color:var(--muted)">${esc(m.email)}</div>
+                </div>
+                <b style="color:${m.paid>0?'var(--good)':'var(--muted)'}">${esc(fmt$(m.paid))}</b>
+              </div>`;
+          }).join('') : '<div style="color:var(--muted);font-size:13px;padding:10px 0">No team members yet.</div>'}
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Transactions <span style="font-size:11px;font-weight:500;color:var(--muted)">— most recent 500</span></h3>
+        ${txns.length ? `
+          <div style="overflow-x:auto"><table>
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Category</th><th>Client</th><th>By</th><th></th></tr></thead>
+            <tbody>${txns.map(t => `
+              <tr>
+                <td style="white-space:nowrap">${esc(new Date(t.occurred_on).toLocaleDateString())}</td>
+                <td><span class="pill" style="background:${t.kind==='revenue'?'rgba(22,163,74,0.12);color:var(--good)':'rgba(211,0,0,0.12);color:var(--red)'}">${t.kind}</span></td>
+                <td><b style="color:${t.kind==='revenue'?'var(--good)':'var(--red)'}">${t.kind==='revenue'?'+':'−'}${esc(fmt$(t.amount))}</b></td>
+                <td>${esc(t.description)}</td>
+                <td style="color:var(--muted)">${esc(t.category || '—')}</td>
+                <td style="color:var(--muted)">${esc(t.client_name || '—')}</td>
+                <td style="color:var(--muted);font-size:12px">${esc(t.created_by_name || '—')}</td>
+                <td style="text-align:right"><button class="btn-ghost" onclick="deleteTransaction(${t.id})" style="padding:4px 8px;color:var(--muted)">${icon('trash',12)}</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table></div>` : '<div style="color:var(--muted);text-align:center;padding:30px">No transactions yet. Add one with the buttons above.</div>'}
+      </div>
+
+      <div class="panel">
+        <h3>Payroll <span style="font-size:11px;font-weight:500;color:var(--muted)">— team payments</span></h3>
+        ${pays.length ? `
+          <div style="overflow-x:auto"><table>
+            <thead><tr><th>Date</th><th>Member</th><th>Amount</th><th>Period</th><th>Description</th><th>Recorded by</th><th></th></tr></thead>
+            <tbody>${pays.map(p => `
+              <tr>
+                <td style="white-space:nowrap">${esc(new Date(p.paid_on).toLocaleDateString())}</td>
+                <td><b>${esc(p.team_name || '—')}</b><div style="font-size:11px;color:var(--muted)">${esc(p.team_email || '')}</div></td>
+                <td><b>${esc(fmt$(p.amount))}</b></td>
+                <td style="color:var(--muted)">${esc(p.period || '—')}</td>
+                <td>${esc(p.description || '—')}</td>
+                <td style="color:var(--muted);font-size:12px">${esc(p.paid_by_name || '—')}</td>
+                <td style="text-align:right"><button class="btn-ghost" onclick="deletePayment(${p.id})" style="padding:4px 8px;color:var(--muted)">${icon('trash',12)}</button></td>
+              </tr>`).join('')}
+            </tbody>
+          </table></div>` : '<div style="color:var(--muted);text-align:center;padding:30px">No payments recorded yet.</div>'}
+      </div>
+    `;
+  }
+
+  function openTxnModal(kind) {
+    document.getElementById('txKind').value = kind || 'revenue';
+    document.getElementById('txnTitle').textContent = kind === 'expense' ? 'Add Expense' : 'Add Revenue';
+    ['txAmount','txDesc','txCategory'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('txDate').value = new Date().toISOString().slice(0,10);
+    const sel = document.getElementById('txClient');
+    sel.innerHTML = '<option value="">— None —</option>' + state.clients.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    document.getElementById('modalTxn').classList.add('show');
+  }
+  async function saveTransaction() {
+    const body = {
+      kind: document.getElementById('txKind').value,
+      amount: parseFloat(document.getElementById('txAmount').value),
+      description: document.getElementById('txDesc').value.trim(),
+      category: document.getElementById('txCategory').value.trim(),
+      occurred_on: document.getElementById('txDate').value || null,
+      client_id: parseInt(document.getElementById('txClient').value, 10) || null
+    };
+    if (!body.amount || !body.description) { toast({ type: 'error', msg: 'Amount and description required.' }); return; }
+    await api('/api/finance/transactions', { method: 'POST', body });
+    closeModal('modalTxn'); await renderFinance();
+    toast({ title: body.kind === 'revenue' ? 'Revenue logged' : 'Expense logged', msg: fmt$(body.amount) + ' — ' + body.description });
+  }
+  async function deleteTransaction(id) {
+    const ok = await confirmDialog({ title: 'Delete entry?', msg: 'This transaction will be permanently removed.', okText: 'Delete' });
+    if (!ok) return;
+    await api('/api/finance/transactions/' + id, { method: 'DELETE' });
+    await renderFinance(); toast({ type: 'info', title: 'Deleted' });
+  }
+
+  function openPayModal() {
+    const sel = document.getElementById('payTeam');
+    sel.innerHTML = state.team.map(t => `<option value="${t.id}">${esc(t.name)} — ${esc(t.email)}</option>`).join('');
+    ['payAmount','payPeriod','payDesc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('payDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('modalPay').classList.add('show');
+  }
+  async function savePayment() {
+    const body = {
+      team_id: parseInt(document.getElementById('payTeam').value, 10),
+      amount: parseFloat(document.getElementById('payAmount').value),
+      period: document.getElementById('payPeriod').value.trim(),
+      description: document.getElementById('payDesc').value.trim(),
+      paid_on: document.getElementById('payDate').value || null
+    };
+    if (!body.team_id || !body.amount) { toast({ type: 'error', msg: 'Team member and amount required.' }); return; }
+    await api('/api/finance/payments', { method: 'POST', body });
+    closeModal('modalPay'); await renderFinance();
+    const m = state.team.find(t => t.id === body.team_id);
+    toast({ title: 'Payment recorded', msg: `${fmt$(body.amount)} → ${m?.name || ''}` });
+  }
+  async function deletePayment(id) {
+    const ok = await confirmDialog({ title: 'Delete payment?', msg: 'This payment record will be permanently removed.', okText: 'Delete' });
+    if (!ok) return;
+    await api('/api/finance/payments/' + id, { method: 'DELETE' });
+    await renderFinance(); toast({ type: 'info', title: 'Deleted' });
   }
 
   /* ===== EXPORT (server-side recent visits) ===== */

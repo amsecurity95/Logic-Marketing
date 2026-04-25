@@ -414,6 +414,121 @@ app.get('/api/analytics/overview', auth, async (_req, res) => {
 });
 
 // ============================================================
+// FINANCE — Transactions (revenue + expenses)
+// ============================================================
+app.get('/api/finance/overview', auth, adminOnly, async (_req, res) => {
+  const [{ rows: rev }, { rows: exp }, { rows: pay }, { rows: byMember }, { rows: monthly }] = await Promise.all([
+    pool.query(`SELECT COALESCE(SUM(amount),0)::numeric AS total FROM transactions WHERE kind='revenue'`),
+    pool.query(`SELECT COALESCE(SUM(amount),0)::numeric AS total FROM transactions WHERE kind='expense'`),
+    pool.query(`SELECT COALESCE(SUM(amount),0)::numeric AS total FROM payments`),
+    pool.query(`
+      SELECT t.id, t.name, t.email, t.color, t.avatar_url,
+        COALESCE(SUM(p.amount),0)::numeric AS paid
+      FROM team t LEFT JOIN payments p ON p.team_id = t.id
+      GROUP BY t.id ORDER BY paid DESC NULLS LAST, t.name`),
+    pool.query(`
+      SELECT to_char(date_trunc('month', occurred_on), 'YYYY-MM') AS month,
+        SUM(CASE WHEN kind='revenue' THEN amount ELSE 0 END)::numeric AS revenue,
+        SUM(CASE WHEN kind='expense' THEN amount ELSE 0 END)::numeric AS expense
+      FROM transactions
+      WHERE occurred_on > now() - interval '12 months'
+      GROUP BY 1 ORDER BY 1`)
+  ]);
+  const revenue = Number(rev[0].total);
+  const expenses = Number(exp[0].total);
+  const payroll = Number(pay[0].total);
+  res.json({
+    revenue, expenses, payroll,
+    netProfit: revenue - expenses - payroll,
+    byMember: byMember.map(r => ({ ...r, paid: Number(r.paid) })),
+    monthly: monthly.map(r => ({ month: r.month, revenue: Number(r.revenue), expense: Number(r.expense) }))
+  });
+});
+
+app.get('/api/finance/transactions', auth, adminOnly, async (_req, res) => {
+  const { rows } = await pool.query(`
+    SELECT t.*, c.name AS client_name, u.name AS created_by_name
+    FROM transactions t
+    LEFT JOIN clients c ON c.id = t.client_id
+    LEFT JOIN team u ON u.id = t.created_by
+    ORDER BY occurred_on DESC, id DESC LIMIT 500`);
+  res.json(rows.map(r => ({ ...r, amount: Number(r.amount) })));
+});
+
+app.post('/api/finance/transactions', auth, adminOnly, async (req, res) => {
+  const t = req.body || {};
+  if (!['revenue', 'expense'].includes(t.kind)) return res.status(400).json({ error: 'Invalid kind' });
+  if (!t.amount || !t.description) return res.status(400).json({ error: 'Amount and description required' });
+  const { rows } = await pool.query(
+    `INSERT INTO transactions (kind, amount, currency, description, category, client_id, occurred_on, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,COALESCE($7,CURRENT_DATE),$8) RETURNING *`,
+    [t.kind, t.amount, t.currency || 'USD', t.description, t.category || '', t.client_id || null, t.occurred_on || null, req.user.id]
+  );
+  res.json(rows[0]);
+});
+
+app.delete('/api/finance/transactions/:id', auth, adminOnly, async (req, res) => {
+  await pool.query('DELETE FROM transactions WHERE id=$1', [Number(req.params.id)]);
+  res.json({ ok: true });
+});
+
+// ============================================================
+// FINANCE — Payments (payroll). Admin sees/edits all; others only their own.
+// ============================================================
+app.get('/api/finance/payments', auth, async (req, res) => {
+  if (req.user.role === 'Admin') {
+    const { rows } = await pool.query(`
+      SELECT p.*, t.name AS team_name, t.email AS team_email,
+        b.name AS paid_by_name
+      FROM payments p
+      LEFT JOIN team t ON t.id = p.team_id
+      LEFT JOIN team b ON b.id = p.paid_by
+      ORDER BY paid_on DESC, id DESC LIMIT 500`);
+    res.json(rows.map(r => ({ ...r, amount: Number(r.amount) })));
+  } else {
+    const { rows } = await pool.query(
+      `SELECT id, amount, currency, period, description, paid_on FROM payments
+       WHERE team_id=$1 ORDER BY paid_on DESC, id DESC`,
+      [req.user.id]
+    );
+    res.json(rows.map(r => ({ ...r, amount: Number(r.amount) })));
+  }
+});
+
+app.post('/api/finance/payments', auth, adminOnly, async (req, res) => {
+  const p = req.body || {};
+  if (!p.team_id || !p.amount) return res.status(400).json({ error: 'team_id and amount required' });
+  const { rows } = await pool.query(
+    `INSERT INTO payments (team_id, amount, currency, period, description, paid_on, paid_by)
+     VALUES ($1,$2,$3,$4,$5,COALESCE($6,CURRENT_DATE),$7) RETURNING *`,
+    [p.team_id, p.amount, p.currency || 'USD', p.period || '', p.description || '', p.paid_on || null, req.user.id]
+  );
+  res.json(rows[0]);
+});
+
+app.delete('/api/finance/payments/:id', auth, adminOnly, async (req, res) => {
+  await pool.query('DELETE FROM payments WHERE id=$1', [Number(req.params.id)]);
+  res.json({ ok: true });
+});
+
+// Personal earnings — accessible to any authenticated user.
+app.get('/api/finance/my-earnings', auth, async (req, res) => {
+  const { rows: total } = await pool.query(
+    `SELECT COALESCE(SUM(amount),0)::numeric AS total FROM payments WHERE team_id=$1`,
+    [req.user.id]
+  );
+  const { rows: history } = await pool.query(
+    `SELECT id, amount, currency, period, description, paid_on FROM payments
+     WHERE team_id=$1 ORDER BY paid_on DESC, id DESC LIMIT 100`,
+    [req.user.id]
+  );
+  res.json({
+    total: Number(total[0].total),
+    history: history.map(r => ({ ...r, amount: Number(r.amount) }))
+  });
+});
+
+// ============================================================
 // STATIC SITE
 // ============================================================
 app.use(express.static(path.join(__dirname, 'public')));
