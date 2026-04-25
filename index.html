@@ -1212,7 +1212,7 @@
 <!-- ===== HERO ===== -->
 <section class="hero">
   <div class="hero-bg">
-    <div class="hero-slide hero-slide-1"><video src="./hero-3.mp4" autoplay muted loop playsinline></video></div>
+    <div class="hero-slide hero-slide-1"><video src="./hero-3.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture></video></div>
     <div class="hero-slide hero-slide-2"><img src="./gallery-6.png" alt=""></div>
     <div class="hero-slide hero-slide-3"><img src="./hero.png" alt=""></div>
   </div>
@@ -1469,7 +1469,7 @@
 <section class="gallery" id="gallery">
   <div class="gallery-grid">
     <div class="gallery-item gi-1 reveal">
-      <video src="./gallery-1.mp4" autoplay muted loop playsinline></video>
+      <video src="./gallery-1.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>
     </div>
     <div class="gallery-item gi-2 reveal" style="--delay:.1s">
       <img src="./gallery-2.png" alt="" loading="lazy">
@@ -1653,6 +1653,23 @@
 </script>
 
 <script>
+  // Force-play autoplay videos on mobile (iOS Low Power Mode etc.)
+  (function() {
+    const videos = document.querySelectorAll('video[autoplay]');
+    const tryPlay = () => videos.forEach(v => {
+      v.muted = true;
+      const p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    });
+    tryPlay();
+    window.addEventListener('load', tryPlay);
+    document.addEventListener('touchstart', tryPlay, { once: true, passive: true });
+    document.addEventListener('click', tryPlay, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) tryPlay();
+    });
+  })();
+
   // Side menu (Puzzle Mining style)
   function toggleSideMenu(force) {
     const body = document.body;
