@@ -1,0 +1,16 @@
+name = "logic-marketing-store"
+main = "src/index.js"
+compatibility_date = "2026-04-01"
+
+# R2 bucket binding — reuses the existing gloryaimar bucket.
+# Data lives under the "logic-marketing/" prefix to keep it separate
+# from other apps that share the bucket.
+[[r2_buckets]]
+binding = "STORE"
+bucket_name = "gloryaimar"
+
+# AUTH_TOKEN is set via:  wrangler secret put AUTH_TOKEN
+# (do NOT commit the token here)
+
+[vars]
+PREFIX = "logic-marketing/"

@@ -1638,7 +1638,78 @@
   const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', channels: 'lm_channels', transactions: 'lm_transactions', payments: 'lm_payments' };
   const AVATAR_COLORS = ['#d30000','#1c1c1e','#16a34a','#f59e0b','#0052D4','#8b5cf6','#ec4899','#0891b2'];
   const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };
-  const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+  const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); cloudSync.queue(k); };
+
+  /* ===== CLOUD SYNC (Cloudflare Worker → R2) =====
+     Local-first writes; debounced upload after each save.
+     On boot, fetches the manifest and pulls any blob newer than local.
+     Configure window.LM_SYNC = { url: 'https://...', token: '...' } before init,
+     OR leave LM_SYNC_URL/LM_SYNC_TOKEN here. */
+  const LM_SYNC_URL = window.LM_SYNC_URL || 'https://logic-marketing-store.aimarmwembo1.workers.dev';
+  const LM_SYNC_TOKEN = window.LM_SYNC_TOKEN || 'lm-store-2026-aimar';
+  const SYNCABLE = ['clients','equipment','inbox','team','messages','channels','transactions','payments'];
+  const STORAGE_TO_REMOTE = Object.fromEntries(SYNCABLE.map(k => [KEYS[k], k]));
+  const REMOTE_TO_STORAGE = Object.fromEntries(SYNCABLE.map(k => [k, KEYS[k]]));
+
+  const cloudSync = {
+    enabled: !!LM_SYNC_URL,
+    pending: new Set(),
+    timer: null,
+    pulling: false,
+    queue(storageKey) {
+      const remoteKey = STORAGE_TO_REMOTE[storageKey];
+      if (!remoteKey || !this.enabled || this.pulling) return;
+      this.pending.add(remoteKey);
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => this.flush(), 800);
+    },
+    async flush() {
+      if (!this.pending.size) return;
+      const keys = [...this.pending]; this.pending.clear();
+      for (const remoteKey of keys) {
+        const data = JSON.parse(localStorage.getItem(REMOTE_TO_STORAGE[remoteKey]) || 'null');
+        try {
+          await fetch(`${LM_SYNC_URL}/api/store/${remoteKey}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${LM_SYNC_TOKEN}` },
+            body: JSON.stringify({ ts: Date.now(), data }),
+          });
+          localStorage.setItem('lm_sync_ts_' + remoteKey, String(Date.now()));
+        } catch (e) { console.warn('cloud sync failed', remoteKey, e); }
+      }
+    },
+    async pullAll() {
+      if (!this.enabled) return;
+      this.pulling = true;
+      try {
+        const res = await fetch(`${LM_SYNC_URL}/api/store`, { headers: { 'Authorization': `Bearer ${LM_SYNC_TOKEN}` } });
+        if (!res.ok) { console.warn('manifest fetch failed', res.status); return; }
+        const { updatedAt = {} } = await res.json();
+        const pulls = [];
+        for (const remoteKey of SYNCABLE) {
+          const remoteTs = updatedAt[remoteKey] || 0;
+          const localTs = Number(localStorage.getItem('lm_sync_ts_' + remoteKey) || 0);
+          if (remoteTs > localTs) pulls.push(this.pullOne(remoteKey, remoteTs));
+        }
+        await Promise.all(pulls);
+      } catch (e) { console.warn('cloud pull failed', e); }
+      finally { this.pulling = false; }
+    },
+    async pullOne(remoteKey, remoteTs) {
+      try {
+        const res = await fetch(`${LM_SYNC_URL}/api/store/${remoteKey}`, { headers: { 'Authorization': `Bearer ${LM_SYNC_TOKEN}` } });
+        if (!res.ok) return;
+        const { data } = await res.json();
+        if (data === null || data === undefined) return;
+        localStorage.setItem(REMOTE_TO_STORAGE[remoteKey], JSON.stringify(data));
+        localStorage.setItem('lm_sync_ts_' + remoteKey, String(remoteTs));
+      } catch (e) { console.warn('pull', remoteKey, e); }
+    },
+  };
+  // Periodic background pull so other devices' edits show up.
+  setInterval(() => cloudSync.pullAll(), 30000);
+  // Pull on focus to feel snappy when switching tabs.
+  window.addEventListener('focus', () => cloudSync.pullAll());
 
   /* ===== SEED DATA ===== */
   const STAGES = [
@@ -3336,6 +3407,11 @@
   hydrateIcons();
   applyUserToUI();
   refresh();
+  // Pull cloud state in the background; refresh views once we have it.
+  cloudSync.pullAll().then(() => {
+    refresh();
+    if (typeof renderChat === 'function' && document.getElementById('page-messages')?.classList.contains('active')) renderChat();
+  });
 
   // live-refresh when tracking data updates (cross-tab)
   window.addEventListener('storage', (e) => {
