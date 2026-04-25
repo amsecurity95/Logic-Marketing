@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 import pg from 'pg';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import 'dotenv/config';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -529,9 +529,20 @@ app.get('/api/finance/my-earnings', auth, async (req, res) => {
 });
 
 // ============================================================
-// STATIC SITE
+// STATIC SITE — clean URLs (no .html, no /index.html)
 // ============================================================
-app.use(express.static(path.join(__dirname, 'public')));
+// 301-redirect ugly URLs to clean ones so the address bar always shows
+// the canonical path.
+app.get(['/index.html', '/index'], (_req, res) => res.redirect(301, '/'));
+app.get('/:page.html', (req, res, next) => {
+  // Redirect /admin.html → /admin, /login.html → /login, etc.
+  // Skip if the file doesn't exist so 404s still surface.
+  const file = path.join(__dirname, 'public', req.params.page + '.html');
+  if (!existsSync(file)) return next();
+  res.redirect(301, '/' + req.params.page);
+});
+
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 app.get('/', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 // 404

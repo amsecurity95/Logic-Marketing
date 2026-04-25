@@ -35,8 +35,23 @@
 # ---- HTTPS redirect ----
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Force HTTPS
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Strip /index.html → /
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/index\.html[\s?] [NC]
+    RewriteRule ^index\.html$ / [L,R=301]
+
+    # Strip .html extension from any URL the user visits (e.g. /about.html → /about)
+    RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/([^\s]+)\.html[\s?] [NC]
+    RewriteRule ^([^.]+)\.html$ /$1 [L,R=301]
+
+    # Internally serve /about as /about.html if the file exists
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^(.+)$ $1.html [L]
 </IfModule>
 
 # ---- Block direct access to dotfiles ----
