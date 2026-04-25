@@ -1705,20 +1705,68 @@
     `;}).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No accounts in this view.</td></tr>';
   }
 
-  function openClientModal() {
-    ['cName','cContact','cIndustry','cEmail','cPhone','cValue','cFirstJob'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('cType').value = 'client';
-    document.getElementById('cStage').value = 'lead';
+  let editingClientId = null;
+  function openClientModal(id) {
+    editingClientId = id || null;
+    const titleEl = document.getElementById('cModalTitle');
+    const saveBtn = document.querySelector('#modalClient .modal-actions .btn-red');
+    const firstJobInput = document.getElementById('cFirstJob');
+    const firstJobLabel = firstJobInput?.previousElementSibling;
+    if (id) {
+      const c = load(KEYS.clients, []).find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('cName').value = c.name || '';
+      document.getElementById('cContact').value = c.contact && c.contact !== '—' ? c.contact : '';
+      document.getElementById('cIndustry').value = c.industry && c.industry !== '—' ? c.industry : '';
+      document.getElementById('cEmail').value = c.email || '';
+      document.getElementById('cPhone').value = c.phone || '';
+      document.getElementById('cValue').value = c.value || '';
+      document.getElementById('cFirstJob').value = '';
+      document.getElementById('cType').value = c.type || 'client';
+      document.getElementById('cStage').value = c.stage || 'lead';
+      if (titleEl) titleEl.textContent = 'Edit client';
+      if (saveBtn) saveBtn.textContent = 'Save changes';
+      if (firstJobInput) firstJobInput.style.display = 'none';
+      if (firstJobLabel && firstJobLabel.tagName === 'LABEL') firstJobLabel.style.display = 'none';
+    } else {
+      ['cName','cContact','cIndustry','cEmail','cPhone','cValue','cFirstJob'].forEach(k => document.getElementById(k).value = '');
+      document.getElementById('cType').value = 'client';
+      document.getElementById('cStage').value = 'lead';
+      if (titleEl) titleEl.textContent = 'Add Account';
+      if (saveBtn) saveBtn.textContent = 'Save';
+      if (firstJobInput) firstJobInput.style.display = '';
+      if (firstJobLabel && firstJobLabel.tagName === 'LABEL') firstJobLabel.style.display = '';
+    }
     document.getElementById('modalClient').classList.add('show');
   }
-  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); if (id === 'modalClient') editingClientId = null; }
   function saveClient() {
     const name = document.getElementById('cName').value.trim();
     if (!name) { toast({ type: 'error', msg: 'Company / name is required.' }); return; }
     const type = document.getElementById('cType').value;
     const stage = document.getElementById('cStage').value;
-    const firstJob = document.getElementById('cFirstJob').value.trim();
     const list = load(KEYS.clients, []);
+
+    if (editingClientId != null) {
+      const c = list.find(x => x.id === editingClientId);
+      if (!c) { closeModal('modalClient'); return; }
+      c.name = name;
+      c.contact = document.getElementById('cContact').value.trim() || '—';
+      c.industry = document.getElementById('cIndustry').value.trim() || '—';
+      c.email = document.getElementById('cEmail').value.trim();
+      c.phone = document.getElementById('cPhone').value.trim();
+      c.value = parseFloat(document.getElementById('cValue').value) || 0;
+      const prevType = c.type;
+      c.type = type;
+      c.stage = stage;
+      if (prevType !== type) c.status = type === 'prospect' ? 'pending' : 'active';
+      save(KEYS.clients, list);
+      closeModal('modalClient'); refreshDrawer(); refresh();
+      toast({ title: 'Client updated', msg: name });
+      return;
+    }
+
+    const firstJob = document.getElementById('cFirstJob').value.trim();
     list.unshift({
       id: Date.now(),
       name,
@@ -1796,6 +1844,7 @@
             <div class="dr-pills">
               <span class="pill ${c.type==='prospect'?'prospect-type':'client-type'}">${c.type==='prospect'?'Prospect':'Client'}</span>
               <span class="pill ${esc(c.status)}">${esc(c.status)}</span>
+              <button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="openClientModal(${c.id})">Edit</button>
               ${c.status !== 'archived'
                 ? `<button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="archiveClient(${c.id})">Archive</button>`
                 : `<button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="unarchiveClient(${c.id})">Unarchive</button>`}

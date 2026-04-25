@@ -468,27 +468,6 @@
     text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
   }
 
-  /* ===== EQUIPMENT PHOTO UPLOADER ===== */
-  .eq-photo-uploader {
-    position: relative; cursor: pointer;
-    width: 96px; height: 96px; flex-shrink: 0;
-    border-radius: 10px; overflow: hidden;
-    border: 1px dashed var(--line);
-  }
-  .eq-photo-preview {
-    width: 100%; height: 100%;
-    background: #f4f5f7; color: var(--muted);
-    display: flex; align-items: center; justify-content: center;
-    transition: filter .2s;
-  }
-  .eq-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
-  .eq-photo-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity .2s; pointer-events: none;
-  }
-  .eq-photo-uploader:hover .eq-photo-overlay { opacity: 1; }
-
   /* ===== AVATAR UPLOADER ===== */
   .avatar-uploader { position: relative; cursor: pointer; }
   .avatar-uploader .profile-avatar { transition: filter .2s; }
@@ -779,21 +758,11 @@
   }
   @media (max-width: 860px) {
     .hamburger { display: flex; }
-    .topbar {
-      grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 16px;
-      background: #0d0d0d; border-bottom-color: var(--red);
-    }
-    .hamburger span, .hamburger span::before, .hamburger span::after { background: #fff; }
-    .hamburger:hover { background: rgba(255,255,255,0.08); }
-    .top-logo img {
-      height: 30px;
-      /* Force pure white on the dark mobile bar regardless of source color. */
-      filter: brightness(0) invert(1);
-    }
+    .topbar { grid-template-columns: auto 1fr auto; gap: 12px; padding: 10px 16px; }
+    .top-logo img { height: 30px; }
     .top-search { display: none; }
     .top-user .name { display: none; }
-    .logout-btn { padding: 6px 10px; font-size: 11px; color: rgba(255,255,255,0.65); border-color: rgba(255,255,255,0.15); }
-    .logout-btn:hover { color: #fff; border-color: var(--red); }
+    .logout-btn { padding: 6px 10px; font-size: 11px; }
     .layout { grid-template-columns: 1fr; }
     .sidebar {
       position: fixed; left: 0; top: 0; bottom: 0;
@@ -880,8 +849,8 @@
       <div class="nav-item" data-page="equipment"><span class="icon" data-icon="camera"></span>Equipment</div>
       <div class="nav-item" data-page="inbox"><span class="icon" data-icon="mail"></span>Inbox <span class="badge" id="navInbox">0</span></div>
       <div class="nav-item" data-page="messages"><span class="icon" data-icon="chat"></span>Messages <span class="badge" id="navMsgs">0</span></div>
-      <div class="nav-item" data-page="finance"><span class="icon" data-icon="dollar"></span>Finance</div>
       <div class="nav-section">Account</div>
+      <div class="nav-item" data-page="finance"><span class="icon" data-icon="dollar"></span>Finance</div>
       <div class="nav-item" data-page="team"><span class="icon" data-icon="shield"></span>Team <span class="badge" id="navTeam">0</span></div>
       <div class="nav-item" data-page="profile"><span class="icon" data-icon="user"></span>Profile</div>
     </aside>
@@ -1191,9 +1160,6 @@
         <div style="grid-column:1/-1"><label>Description</label><input id="txDesc" placeholder="e.g. Chambana Rides — landing page deposit"/></div>
         <div><label>Category</label><input id="txCategory" placeholder="project, software, rent…"/></div>
         <div><label>Date</label><input id="txDate" type="date"/></div>
-        <div style="grid-column:1/-1"><label>Linked client (optional)</label>
-          <select id="txClient" style="width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:14px;background:#fff"></select>
-        </div>
       </div>
       <div class="modal-actions">
         <button class="btn-ghost" onclick="closeModal('modalTxn')">Cancel</button>
@@ -1251,6 +1217,13 @@
   <div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
   <aside class="drawer" id="clientDrawer"></aside>
 
+  <style>
+    .eq-photo-uploader { position: relative; cursor: pointer; width: 96px; height: 96px; flex-shrink: 0; border-radius: 10px; overflow: hidden; border: 1px dashed var(--line); }
+    .eq-photo-preview { width: 100%; height: 100%; background: #f4f5f7; color: var(--muted); display: flex; align-items: center; justify-content: center; }
+    .eq-photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .eq-photo-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); color: #fff; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s; pointer-events: none; }
+    .eq-photo-uploader:hover .eq-photo-overlay { opacity: 1; }
+  </style>
   <div class="modal-bg" id="modalEq">
     <div class="modal" style="max-width:540px">
       <h3 id="eqModalTitle">Add Equipment</h3>
@@ -1271,9 +1244,9 @@
         <div><label>Saved So Far (USD)</label><input id="eSaved" type="number" placeholder="0"/></div>
       </div>
       <input type="hidden" id="eImg"/>
-      <div style="display:flex;gap:8px;margin-top:6px">
+      <div style="display:flex;gap:8px;margin-top:6px;align-items:center">
         <button type="button" class="btn-ghost" id="eqRemovePhoto" onclick="clearEqPhoto()" style="font-size:12px;padding:6px 10px;display:none">Remove photo</button>
-        <span style="color:var(--muted);font-size:12px;align-self:center">Or paste image URL: </span>
+        <span style="color:var(--muted);font-size:12px">Or paste URL:</span>
         <input type="url" id="eImgUrl" placeholder="https://…" style="flex:1;padding:8px 10px;font-size:12px;border:1px solid var(--line);border-radius:6px"/>
       </div>
       <div class="modal-actions" style="margin-top:18px">
@@ -1435,81 +1408,15 @@
     });
   }
 
-  /* ===== USER (declared early so API helpers can reference it) ===== */
+  /* ===== AUTH (load early so seeds can use it) ===== */
   let user = JSON.parse(localStorage.getItem('lm_user') || 'null');
-
-  /* ===== API CLIENT ===== */
-  const TOKEN_KEY = 'lm_token';
-  async function api(path, opts = {}) {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const headers = { ...(opts.headers || {}) };
-    if (token) headers['authorization'] = 'Bearer ' + token;
-    if (opts.body && !(opts.body instanceof FormData)) {
-      headers['content-type'] = 'application/json';
-      opts.body = JSON.stringify(opts.body);
-    }
-    let r;
-    try { r = await fetch(path, { ...opts, headers }); }
-    catch (e) { toast({ type: 'error', msg: 'Network error — backend unreachable.' }); throw e; }
-    if (r.status === 401) {
-      localStorage.removeItem(TOKEN_KEY); localStorage.removeItem('lm_user');
-      window.location.href = './login.html'; throw new Error('unauthorized');
-    }
-    const ct = r.headers.get('content-type') || '';
-    const data = ct.includes('application/json') ? await r.json() : await r.text();
-    if (!r.ok) {
-      const msg = (data && data.error) || ('Request failed: ' + r.status);
-      toast({ type: 'error', msg }); throw new Error(msg);
-    }
-    return data;
-  }
-
-  /* ===== STATE CACHE — populated from API, drives existing renders ===== */
-  const state = {
-    me: null, team: [], clients: [], equipment: [], inbox: [], messages: [], analytics: null,
-    inboxRead: JSON.parse(localStorage.getItem('lm_inbox_read') || '{}'),  // local-only: track read state per user
-    chatRead: JSON.parse(localStorage.getItem('lm_chat_read') || '{}')
-  };
-  function persistInboxRead() { localStorage.setItem('lm_inbox_read', JSON.stringify(state.inboxRead)); }
-  function persistChatRead() { localStorage.setItem('lm_chat_read', JSON.stringify(state.chatRead)); }
-
-  function normalizeMember(m) { return { ...m, avatar: m.avatar_url || m.avatar || '', joinedAt: m.joined_at || m.joinedAt || '' }; }
-  async function loadMe()        { state.me = normalizeMember(await api('/api/me')); user = { ...user, ...state.me }; localStorage.setItem('lm_user', JSON.stringify(user)); }
-  async function loadTeam()      { state.team = (await api('/api/team')).map(normalizeMember); }
-  async function loadClients()   { state.clients = await api('/api/clients'); }
-  async function loadEquipment() {
-    state.equipment = (await api('/api/equipment')).map(e => ({
-      ...e,
-      price: Number(e.price), saved: Number(e.saved),
-      img: e.img_url || '',
-      acquiredAt: e.acquired_at ? new Date(e.acquired_at).getTime() : null
-    }));
-  }
-  async function loadInbox()     {
-    state.inbox = (await api('/api/inbox')).map(m => ({
-      ...m,
-      from: m.name, body: m.message, lang: m.language,
-      subject: (m.service || '') + (m.company ? ' — ' + m.company : ''),
-      ts: new Date(m.ts).getTime(),
-      read: state.inboxRead[user.id]?.[m.id] === true
-    }));
-  }
-  async function loadAnalytics() { state.analytics = await api('/api/analytics/overview'); }
-  async function loadMessages(channel) {
-    const list = await api('/api/messages?channel=' + encodeURIComponent(channel));
-    state.messages = list.map(m => ({
-      ...m,
-      fromId: m.from_id, fromName: m.from_name, fromColor: m.from_color, fromAvatar: m.from_avatar,
-      ts: new Date(m.ts).getTime(),
-      channel: m.channel
-    }));
-  }
-
-  /* ===== AUTH ===== */
-  if (!user || !localStorage.getItem(TOKEN_KEY)) window.location.href = './login.html';
-  function logout() { localStorage.removeItem('lm_user'); localStorage.removeItem(TOKEN_KEY); window.location.href = './login.html'; }
+  if (!user) window.location.href = './login.html';
+  function logout() { localStorage.removeItem('lm_user'); window.location.href = './login.html'; }
   function applyUserToUI() {
-    const me = state.me || user;
+    const list = JSON.parse(localStorage.getItem(KEYS.team) || '[]');
+    const me = list.find(t => t.id === user.id) || user;
+    user = { ...user, ...me };
+    localStorage.setItem('lm_user', JSON.stringify(user));
     const initial = (me.name || 'L').slice(0,1).toUpperCase();
     const safeColor = /^#[0-9a-f]{3,8}$/i.test(me.color || '') ? me.color : '';
     const av = document.getElementById('userAvatar');
@@ -1583,20 +1490,18 @@
     if (p === 'inbox') renderInbox();
     if (p === 'team') renderTeam();
     if (p === 'profile') applyUserToUI();
-    if (p === 'messages') renderChat();
     if (p === 'finance') renderFinance();
+    if (p === 'messages') renderChat();
     window.scrollTo(0,0);
   }
 
   /* ===== STORAGE ===== */
-  // KEYS are state keys (no longer localStorage keys — kept for code compat).
-  const KEYS = { clients: 'clients', equipment: 'equipment', inbox: 'inbox', team: 'team', messages: 'messages', chatRead: 'chatRead', inboxRead: 'inboxRead' };
+  const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', transactions: 'lm_transactions', payments: 'lm_payments' };
   const AVATAR_COLORS = ['#d30000','#1c1c1e','#16a34a','#f59e0b','#0052D4','#8b5cf6','#ec4899','#0891b2'];
-  // Compat shims: `load(KEYS.x)` returns the in-memory cache. `save()` is a no-op (mutations go through api()).
-  function load(k, fb) { return state[k] !== undefined ? state[k] : fb; }
-  function save() { /* no-op — server is the source of truth */ }
+  const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };
+  const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-  /* ===== STAGE DEFINITIONS ===== */
+  /* ===== SEED DATA ===== */
   const STAGES = [
     { k: 'lead', label: 'Lead', pct: 10 },
     { k: 'discovery', label: 'Discovery', pct: 30 },
@@ -1606,8 +1511,7 @@
   ];
   const stageInfo = (k) => STAGES.find(s => s.k === k) || STAGES[0];
 
-  /* (Seeds are now server-side. The blocks below are dead — kept temporarily until removed. Bypassed via `if(false)`.) */
-  if (false) {
+  if (!localStorage.getItem(KEYS.clients)) {
     save(KEYS.clients, [
       { id: 1, name: 'Chambana Rides', contact: 'Auguy M.', email: 'auguy@chambanarides.com', phone: '+1 217-555-0142', industry: 'Transportation', type: 'client', status: 'active', stage: 'in_progress', value: 8500, since: '2025-09-12',
         jobs: [
@@ -1690,23 +1594,30 @@
     ]);
   }
 
+  /* ===== ANALYTICS HELPERS (real data) ===== */
+  function visitsInWindow(days) {
+    const cutoff = Date.now() - days * 86400000;
+    return load(KEYS.visits, []).filter(v => v.ts >= cutoff);
+  }
+  function uniqueSessions(visits) { return new Set(visits.map(v => v.sessionId)).size; }
+  function uniqueIPs(visits) { return new Set(visits.map(v => v.ip)).size; }
+
   /* ===== KPIs / DASHBOARD ===== */
-  async function refresh() {
-    // Pull fresh data from the API in parallel
-    try {
-      await Promise.all([loadClients(), loadInbox(), loadEquipment(), loadTeam(), loadAnalytics()]);
-    } catch (_) { return; }
-    const clients = state.clients;
-    const inbox = state.inbox;
-    const a = state.analytics || { sessions: 0, clicks: 0 };
-    const leads = inbox.filter(m => !m.read).length;
-    document.getElementById('kpiClients').textContent = clients.filter(c => c.status === 'active').length;
-    document.getElementById('kpiVisitors').textContent = (a.sessions || 0).toLocaleString();
-    document.getElementById('kpiClicks').textContent = (a.clicks || 0).toLocaleString();
+  function refresh() {
+    const clients = load(KEYS.clients, []);
+    const inbox = load(KEYS.inbox, []);
+    const visits30 = visitsInWindow(30);
+    const clicks30 = load(KEYS.clicks, []).filter(c => c.ts >= Date.now() - 30 * 86400000);
+    const visitors = uniqueSessions(visits30);
+    const clicks = clicks30.length;
+    const leads = inbox.filter(m=>!m.read).length;
+    document.getElementById('kpiClients').textContent = clients.filter(c=>c.status==='active').length;
+    document.getElementById('kpiVisitors').textContent = visitors.toLocaleString();
+    document.getElementById('kpiClicks').textContent = clicks.toLocaleString();
     document.getElementById('kpiLeads').textContent = leads;
     document.getElementById('navClients').textContent = clients.length;
-    document.getElementById('navInbox').textContent = leads;
-    document.getElementById('navTeam').textContent = state.team.length;
+    document.getElementById('navInbox').textContent = inbox.filter(m=>!m.read).length;
+    document.getElementById('navTeam').textContent = load(KEYS.team, []).length;
     document.getElementById('navMsgs').textContent = unreadMessageCount();
     renderDashChart();
     renderDashInbox();
@@ -1716,16 +1627,16 @@
   }
 
   function makeChart(host, labelHost, days) {
-    // Use server-aggregated daily counts (analytics/overview returns last 30 days; we slice).
+    // Bucket real visits per day (unique sessions per day)
+    const buckets = new Array(days).fill(0).map(() => new Set());
     const today = new Date(); today.setHours(23,59,59,999);
-    const buckets = new Array(days).fill(0);
-    const daily = (state.analytics && state.analytics.daily) || [];
-    daily.forEach(row => {
-      const dayDiff = Math.floor((today.getTime() - new Date(row.day).getTime()) / 86400000);
+    const visits = visitsInWindow(days);
+    visits.forEach(v => {
+      const dayDiff = Math.floor((today.getTime() - v.ts) / 86400000);
       const idx = days - 1 - dayDiff;
-      if (idx >= 0 && idx < days) buckets[idx] = row.sessions;
+      if (idx >= 0 && idx < days) buckets[idx].add(v.sessionId);
     });
-    const data = buckets;
+    const data = buckets.map(s => s.size);
     const max = Math.max(1, ...data);
     host.innerHTML = data.map((v, i) => {
       const d = new Date(today); d.setDate(today.getDate() - (days-1-i));
@@ -1743,7 +1654,7 @@
   function renderDashChart() { makeChart(document.getElementById('dashChart'), document.getElementById('dashChartLabels'), 14); }
 
   function renderDashInbox() {
-    const inbox = state.inbox.slice().sort((a,b)=>b.ts-a.ts).slice(0,4);
+    const inbox = load(KEYS.inbox, []).slice().sort((a,b)=>b.ts-a.ts).slice(0,4);
     document.getElementById('dashInbox').innerHTML = inbox.map(m => `
       <div style="padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="show('inbox');setTimeout(()=>openMessage(${m.id}),0)">
         <div style="display:flex;justify-content:space-between;font-size:13px"><b>${esc(m.from)}</b><span style="color:var(--muted);font-size:11px">${timeAgo(m.ts)}</span></div>
@@ -1762,7 +1673,7 @@
   });
 
   function renderClients() {
-    let rows = state.clients;
+    let rows = load(KEYS.clients, []);
     if (clientFilter === 'client') rows = rows.filter(c => c.type === 'client' && c.status !== 'archived');
     else if (clientFilter === 'prospect') rows = rows.filter(c => c.type === 'prospect' && c.status !== 'archived');
     else if (clientFilter === 'archived') rows = rows.filter(c => c.status === 'archived');
@@ -1794,18 +1705,70 @@
     `;}).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:40px">No accounts in this view.</td></tr>';
   }
 
-  function openClientModal() {
-    ['cName','cContact','cIndustry','cEmail','cPhone','cValue','cFirstJob'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('cType').value = 'client';
-    document.getElementById('cStage').value = 'lead';
+  let editingClientId = null;
+  function openClientModal(id) {
+    editingClientId = id || null;
+    const titleEl = document.getElementById('cModalTitle');
+    const saveBtn = document.querySelector('#modalClient .modal-actions .btn-red');
+    const firstJobInput = document.getElementById('cFirstJob');
+    const firstJobLabel = firstJobInput?.previousElementSibling;
+    if (id) {
+      const c = load(KEYS.clients, []).find(x => x.id === id);
+      if (!c) return;
+      document.getElementById('cName').value = c.name || '';
+      document.getElementById('cContact').value = c.contact && c.contact !== '—' ? c.contact : '';
+      document.getElementById('cIndustry').value = c.industry && c.industry !== '—' ? c.industry : '';
+      document.getElementById('cEmail').value = c.email || '';
+      document.getElementById('cPhone').value = c.phone || '';
+      document.getElementById('cValue').value = c.value || '';
+      document.getElementById('cFirstJob').value = '';
+      document.getElementById('cType').value = c.type || 'client';
+      document.getElementById('cStage').value = c.stage || 'lead';
+      if (titleEl) titleEl.textContent = 'Edit client';
+      if (saveBtn) saveBtn.textContent = 'Save changes';
+      if (firstJobInput) firstJobInput.style.display = 'none';
+      if (firstJobLabel && firstJobLabel.tagName === 'LABEL') firstJobLabel.style.display = 'none';
+    } else {
+      ['cName','cContact','cIndustry','cEmail','cPhone','cValue','cFirstJob'].forEach(k => document.getElementById(k).value = '');
+      document.getElementById('cType').value = 'client';
+      document.getElementById('cStage').value = 'lead';
+      if (titleEl) titleEl.textContent = 'Add Account';
+      if (saveBtn) saveBtn.textContent = 'Save';
+      if (firstJobInput) firstJobInput.style.display = '';
+      if (firstJobLabel && firstJobLabel.tagName === 'LABEL') firstJobLabel.style.display = '';
+    }
     document.getElementById('modalClient').classList.add('show');
   }
-  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
-  async function saveClient() {
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); if (id === 'modalClient') editingClientId = null; }
+  function saveClient() {
     const name = document.getElementById('cName').value.trim();
     if (!name) { toast({ type: 'error', msg: 'Company / name is required.' }); return; }
     const type = document.getElementById('cType').value;
-    await api('/api/clients', { method: 'POST', body: {
+    const stage = document.getElementById('cStage').value;
+    const list = load(KEYS.clients, []);
+
+    if (editingClientId != null) {
+      const c = list.find(x => x.id === editingClientId);
+      if (!c) { closeModal('modalClient'); return; }
+      c.name = name;
+      c.contact = document.getElementById('cContact').value.trim() || '—';
+      c.industry = document.getElementById('cIndustry').value.trim() || '—';
+      c.email = document.getElementById('cEmail').value.trim();
+      c.phone = document.getElementById('cPhone').value.trim();
+      c.value = parseFloat(document.getElementById('cValue').value) || 0;
+      const prevType = c.type;
+      c.type = type;
+      c.stage = stage;
+      if (prevType !== type) c.status = type === 'prospect' ? 'pending' : 'active';
+      save(KEYS.clients, list);
+      closeModal('modalClient'); refreshDrawer(); refresh();
+      toast({ title: 'Client updated', msg: name });
+      return;
+    }
+
+    const firstJob = document.getElementById('cFirstJob').value.trim();
+    list.unshift({
+      id: Date.now(),
       name,
       contact: document.getElementById('cContact').value.trim() || '—',
       industry: document.getElementById('cIndustry').value.trim() || '—',
@@ -1813,18 +1776,21 @@
       phone: document.getElementById('cPhone').value.trim(),
       type,
       status: type === 'prospect' ? 'pending' : 'active',
-      stage: document.getElementById('cStage').value,
+      stage,
       value: parseFloat(document.getElementById('cValue').value) || 0,
-      firstJob: document.getElementById('cFirstJob').value.trim()
-    }});
-    closeModal('modalClient'); await refresh();
+      since: new Date().toISOString().slice(0,10),
+      jobs: firstJob ? [{ id: Date.now()+1, title: firstJob, status: 'planned', value: 0 }] : [],
+      notes: [{ id: Date.now()+2, ts: Date.now(), author: user?.name || 'Team', text: `Added as ${type}.` }]
+    });
+    save(KEYS.clients, list);
+    closeModal('modalClient'); refresh();
     toast({ title: type === 'prospect' ? 'Prospect added' : 'Client added', msg: `${name} is now in your CRM.` });
   }
 
   /* ===== CLIENT DRAWER ===== */
   let openClientId = null;
   function openClient(id) {
-    const c = state.clients.find(x => x.id === id);
+    const c = load(KEYS.clients, []).find(x => x.id === id);
     if (!c) return;
     openClientId = id;
     renderDrawer(c);
@@ -1878,6 +1844,7 @@
             <div class="dr-pills">
               <span class="pill ${c.type==='prospect'?'prospect-type':'client-type'}">${c.type==='prospect'?'Prospect':'Client'}</span>
               <span class="pill ${esc(c.status)}">${esc(c.status)}</span>
+              <button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="openClientModal(${c.id})">Edit</button>
               ${c.status !== 'archived'
                 ? `<button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="archiveClient(${c.id})">Archive</button>`
                 : `<button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="unarchiveClient(${c.id})">Unarchive</button>`}
@@ -1922,117 +1889,85 @@
   }
   function refreshDrawer() {
     if (openClientId == null) return;
-    const c = state.clients.find(x => x.id === openClientId);
+    const c = load(KEYS.clients, []).find(x => x.id === openClientId);
     if (c) renderDrawer(c);
   }
 
-  async function setStage(id, stage) {
-    const c = state.clients.find(x => x.id === id); if (!c) return;
-    const patch = { stage };
-    if (stage === 'delivered' && c.type === 'prospect') { patch.type = 'client'; patch.status = 'active'; }
-    await api('/api/clients/' + id, { method: 'PUT', body: patch });
-    await loadClients(); refreshDrawer(); refresh();
+  function setStage(id, stage) {
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === id);
+    if (!c) return;
+    c.stage = stage;
+    if (stage === 'delivered' && c.type === 'prospect') { c.type = 'client'; c.status = 'active'; }
+    save(KEYS.clients, list);
+    refreshDrawer(); refresh();
     toast({ title: 'Stage updated', msg: `${c.name} → ${stageInfo(stage).label}` });
   }
   async function addJob(id) {
     const title = await promptDialog({ title: 'Add job / service', msg: 'What work are you doing for this client?', placeholder: 'Brand identity, landing page, ad campaign…', okText: 'Add' });
     if (!title) return;
     const valStr = await promptDialog({ title: 'Job value (optional)', msg: 'Estimated value in USD. Leave blank to skip.', placeholder: '5000', type: 'number', okText: 'Save' });
-    await api('/api/clients/' + id + '/jobs', { method: 'POST', body: { title: title.trim(), status: 'planned', value: parseFloat(valStr) || 0 } });
-    await loadClients(); refreshDrawer(); refresh();
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === id); if (!c) return;
+    (c.jobs = c.jobs || []).push({ id: Date.now(), title: title.trim(), status: 'planned', value: parseFloat(valStr) || 0 });
+    save(KEYS.clients, list); refreshDrawer(); refresh();
     toast({ title: 'Job added', msg: title });
   }
-  async function toggleJob(cid, jid) {
-    const c = state.clients.find(x => x.id === cid); if (!c) return;
+  function toggleJob(cid, jid) {
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === cid); if (!c) return;
     const j = c.jobs.find(x => x.id === jid); if (!j) return;
-    const next = j.status === 'done' ? 'in_progress' : (j.status === 'planned' ? 'in_progress' : 'done');
-    await api('/api/jobs/' + jid, { method: 'PUT', body: { status: next } });
-    await loadClients(); refreshDrawer();
+    j.status = j.status === 'done' ? 'in_progress' : (j.status === 'planned' ? 'in_progress' : 'done');
+    save(KEYS.clients, list); refreshDrawer();
   }
   async function removeJob(cid, jid) {
     const ok = await confirmDialog({ title: 'Remove job?', msg: 'This job will be removed from the client record.', okText: 'Remove' });
     if (!ok) return;
-    await api('/api/jobs/' + jid, { method: 'DELETE' });
-    await loadClients(); refreshDrawer();
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === cid); if (!c) return;
+    c.jobs = c.jobs.filter(j => j.id !== jid);
+    save(KEYS.clients, list); refreshDrawer();
   }
-  async function addNote(id) {
+  function addNote(id) {
     const ta = document.getElementById('noteInput');
     const text = (ta?.value || '').trim();
     if (!text) return;
-    await api('/api/clients/' + id + '/notes', { method: 'POST', body: { text } });
-    await loadClients(); refreshDrawer();
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === id); if (!c) return;
+    (c.notes = c.notes || []).push({ id: Date.now(), ts: Date.now(), author: user?.name || 'Team', text });
+    save(KEYS.clients, list); refreshDrawer();
   }
   async function removeNote(cid, nid) {
     const ok = await confirmDialog({ title: 'Delete note?', msg: 'This activity entry will be permanently removed.', okText: 'Delete' });
     if (!ok) return;
-    await api('/api/notes/' + nid, { method: 'DELETE' });
-    await loadClients(); refreshDrawer();
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === cid); if (!c) return;
+    c.notes = c.notes.filter(n => n.id !== nid);
+    save(KEYS.clients, list); refreshDrawer();
   }
-  async function archiveClient(id) {
-    const c = state.clients.find(x => x.id === id); if (!c) return;
-    await api('/api/clients/' + id, { method: 'PUT', body: { status: 'archived' } });
-    await loadClients(); refreshDrawer(); refresh();
-    toast({ type: 'info', title: 'Archived', msg: c.name });
+  function archiveClient(id) {
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === id); if (!c) return;
+    c.status = 'archived'; save(KEYS.clients, list);
+    refreshDrawer(); refresh(); toast({ type: 'info', title: 'Archived', msg: c.name });
   }
-  async function unarchiveClient(id) {
-    const c = state.clients.find(x => x.id === id); if (!c) return;
-    await api('/api/clients/' + id, { method: 'PUT', body: { status: c.type === 'prospect' ? 'pending' : 'active' } });
-    await loadClients(); refreshDrawer(); refresh();
-    toast({ title: 'Restored', msg: c.name });
+  function unarchiveClient(id) {
+    const list = load(KEYS.clients, []);
+    const c = list.find(x => x.id === id); if (!c) return;
+    c.status = c.type === 'prospect' ? 'pending' : 'active';
+    save(KEYS.clients, list); refreshDrawer(); refresh(); toast({ title: 'Restored', msg: c.name });
   }
   async function deleteClient(id) {
-    const c = state.clients.find(x => x.id === id);
+    const c = load(KEYS.clients, []).find(x => x.id === id);
     const ok = await confirmDialog({ title: 'Delete account?', msg: `${c?.name || 'This account'}, along with all jobs and notes, will be permanently deleted.`, okText: 'Delete' });
     if (!ok) return;
-    await api('/api/clients/' + id, { method: 'DELETE' });
-    closeDrawer(); await refresh();
+    save(KEYS.clients, load(KEYS.clients, []).filter(x => x.id !== id));
+    closeDrawer(); refresh();
     toast({ type: 'info', title: 'Deleted', msg: c?.name || '' });
   }
 
-  /* ===== ANALYTICS (server-aggregated) ===== */
-  async function renderAnalytics() {
-    try { await loadAnalytics(); } catch(_) {}
-    const a = state.analytics; if (!a) return;
-    makeChart(document.getElementById('aChart'), document.getElementById('aChartLabels'), 30);
-    document.getElementById('aSess').textContent = (a.sessions || 0).toLocaleString();
-    document.getElementById('aViews').textContent = (a.pageViews || 0).toLocaleString();
-    document.getElementById('aTime').textContent = '—';
-    document.getElementById('aBounce').textContent = '—';
-    const geoArr = a.geo || [];
-    const geoMax = Math.max(1, ...geoArr.map(g => g.n));
-    const geoHost = document.getElementById('geoList');
-    geoHost.innerHTML = geoArr.length
-      ? geoArr.map(g => `
-          <div class="geo-row">
-            <div class="flag">${esc(g.flag || '🌐')}</div>
-            <div class="name">${esc(g.city)}${g.country ? ', ' + esc(g.country) : ''}</div>
-            <div class="geo-bar"><div style="width:${(g.n/geoMax)*100}%"></div></div>
-            <div class="count">${g.n}</div>
-          </div>`).join('')
-      : `<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">No visits yet.</div>`;
-    const pages = a.pages || [];
-    document.getElementById('pagesTable').innerHTML = pages.length
-      ? pages.map(p => `<tr><td><b>${esc(p.page || 'index.html')}</b></td><td>${(p.views||0).toLocaleString()}</td><td>${(p.clicks||0).toLocaleString()}</td><td>${p.views ? ((p.clicks/p.views)*100).toFixed(1) : '0'}%</td></tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">No page views yet.</td></tr>';
-    const recent = a.recent || [];
-    document.getElementById('recentVisitors').innerHTML = recent.length
-      ? recent.map(v => {
-          let referrerLabel = 'Direct';
-          if (v.referrer && v.referrer !== 'direct') {
-            try { referrerLabel = new URL(v.referrer, window.location.href).hostname; } catch(_) { referrerLabel = '—'; }
-          }
-          return `<tr>
-            <td><code style="font-size:12px;color:var(--ink)">${esc(v.ip || '')}</code></td>
-            <td>${esc(v.flag || '')} ${esc(v.city || '—')}${v.country ? ', ' + esc(v.country) : ''}</td>
-            <td><b>${esc(v.page)}</b></td>
-            <td style="color:var(--muted)">${esc(referrerLabel)}</td>
-            <td style="color:var(--muted);font-size:12px">${new Date(v.ts).toLocaleString()}</td>
-          </tr>`;
-        }).join('')
-      : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No visitors tracked yet.</td></tr>`;
-  }
-
-  function _unusedAnalyticsLegacy() {
+  /* ===== ANALYTICS (real data) ===== */
+  function renderAnalytics() {
     makeChart(document.getElementById('aChart'), document.getElementById('aChartLabels'), 30);
     const visits = visitsInWindow(30);
     const clicks = load(KEYS.clicks, []).filter(c => c.ts >= Date.now() - 30 * 86400000);
@@ -2118,7 +2053,7 @@
 
   /* ===== EQUIPMENT ===== */
   function renderEquipment() {
-    const items = state.equipment;
+    const items = load(KEYS.equipment, []);
     const wishlist = items.filter(e => e.saved < e.price);
     const available = items.filter(e => e.saved >= e.price);
 
@@ -2193,7 +2128,7 @@
     document.getElementById('modalEq').classList.add('show');
   }
   function editEq(id) {
-    const e = state.equipment.find(x => x.id === id); if (!e) return;
+    const e = load(KEYS.equipment, []).find(x => x.id === id); if (!e) return;
     editingEqId = id;
     document.getElementById('eqModalTitle').textContent = 'Edit Equipment';
     const sel = document.getElementById('eCategory');
@@ -2247,71 +2182,84 @@
     document.getElementById('eImgUrl').value = '';
     setEqPhotoPreview('');
   }
-  async function moveBackToWishlist(id) {
-    const it = state.equipment.find(e => e.id === id); if (!it) return;
-    await api('/api/equipment/' + id, { method: 'PUT', body: { saved: Math.max(0, it.price - 1) } });
-    await loadEquipment(); refresh();
+  function moveBackToWishlist(id) {
+    const list = load(KEYS.equipment, []);
+    const it = list.find(e => e.id === id); if (!it) return;
+    it.saved = Math.max(0, it.price - 1);
+    delete it.acquiredAt;
+    save(KEYS.equipment, list); refresh();
     toast({ type: 'info', title: 'Moved back to wishlist', msg: it.name });
   }
-  async function saveEq() {
+  function saveEq() {
     const name = document.getElementById('eName').value.trim();
     const price = parseFloat(document.getElementById('ePrice').value);
     if (!name || !price) { toast({ type: 'error', msg: 'Name and price are required.' }); return; }
     const saved = parseFloat(document.getElementById('eSaved').value) || 0;
-    // Image preference order: uploaded data URL > pasted URL field
     const uploaded = document.getElementById('eImg').value.trim();
     const urlField = document.getElementById('eImgUrl').value.trim();
-    const img_url = uploaded || urlField;
-    const body = { name, price, saved, img_url, category: document.getElementById('eCategory').value || 'other' };
+    const img = uploaded || urlField;
+    const category = document.getElementById('eCategory').value || 'other';
+    const list = load(KEYS.equipment, []);
     if (editingEqId) {
-      await api('/api/equipment/' + editingEqId, { method: 'PUT', body });
+      const it = list.find(x => x.id === editingEqId);
+      if (it) {
+        it.name = name; it.price = price; it.saved = saved; it.img = img; it.category = category;
+        if (saved >= price && !it.acquiredAt) it.acquiredAt = Date.now();
+        if (saved < price) delete it.acquiredAt;
+      }
+      save(KEYS.equipment, list);
+      closeModal('modalEq'); refresh();
+      toast({ title: 'Equipment updated', msg: name });
     } else {
-      await api('/api/equipment', { method: 'POST', body });
+      const item = { id: Date.now(), name, img, price, saved, category };
+      if (saved >= price) item.acquiredAt = Date.now();
+      list.unshift(item);
+      save(KEYS.equipment, list);
+      closeModal('modalEq'); refresh();
+      toast({ title: saved >= price ? 'Added to available gear' : 'Equipment added', msg: `${name} added to ${saved >= price ? 'inventory' : 'wishlist'}.` });
     }
-    closeModal('modalEq'); await loadEquipment(); refresh();
-    toast({
-      title: editingEqId ? 'Equipment updated' : (saved >= price ? 'Added to available gear' : 'Equipment added'),
-      msg: editingEqId ? name : `${name} added to ${saved >= price ? 'inventory' : 'wishlist'}.`
-    });
   }
   async function addSavings(id) {
-    const it = state.equipment.find(e => e.id === id);
+    const it = load(KEYS.equipment, []).find(e => e.id === id);
     if (!it) return;
     const remain = Math.max(0, it.price - it.saved);
     const v = await promptDialog({
       title: 'Add savings',
       msg: `${it.name} — $${remain} left to fully fund.`,
-      placeholder: '50', type: 'number', okText: 'Add'
+      placeholder: '50',
+      type: 'number',
+      okText: 'Add'
     });
     if (v === null) return;
     const amt = parseFloat(v);
     if (!amt || amt <= 0) { toast({ type: 'error', msg: 'Enter a valid amount.' }); return; }
-    const wasFunded = it.saved >= it.price;
-    const nextSaved = Math.min(it.price, it.saved + amt);
-    await api('/api/equipment/' + id, { method: 'PUT', body: { saved: nextSaved } });
-    await loadEquipment(); refresh();
-    const updated = state.equipment.find(e => e.id === id) || it;
-    const nowFunded = updated.saved >= updated.price;
+    const list = load(KEYS.equipment, []);
+    const item = list.find(e => e.id === id);
+    const wasFunded = item.saved >= item.price;
+    item.saved = Math.min(item.price, item.saved + amt);
+    const nowFunded = item.saved >= item.price;
+    if (nowFunded && !wasFunded) item.acquiredAt = Date.now();
+    save(KEYS.equipment, list); refresh();
     toast({
       type: 'success',
-      title: nowFunded && !wasFunded ? 'Fully funded — moved to Available!' : `+$${amt} saved`,
-      msg: nowFunded ? `${updated.name} is now in your available gear.` : `${updated.name} — $${updated.price - updated.saved} to go.`,
+      title: nowFunded ? 'Fully funded — moved to Available!' : `+$${amt} saved`,
+      msg: nowFunded ? `${item.name} is now in your available gear.` : `${item.name} — $${item.price - item.saved} to go.`,
       duration: nowFunded ? 5000 : 3500
     });
   }
   async function deleteEq(id) {
-    const it = state.equipment.find(e => e.id === id);
+    const it = load(KEYS.equipment, []).find(e => e.id === id);
     const ok = await confirmDialog({ title: 'Remove equipment?', msg: `${it?.name || 'This item'} and its saved progress will be removed.`, okText: 'Remove' });
     if (!ok) return;
-    await api('/api/equipment/' + id, { method: 'DELETE' });
-    await loadEquipment(); refresh();
+    save(KEYS.equipment, load(KEYS.equipment, []).filter(e => e.id !== id));
+    refresh();
     toast({ type: 'info', title: 'Removed', msg: it?.name || '' });
   }
 
   /* ===== INBOX ===== */
   let openMsgId = null;
   function renderInbox() {
-    const list = state.inbox.slice().sort((a,b)=>b.ts-a.ts);
+    const list = load(KEYS.inbox, []).slice().sort((a,b)=>b.ts-a.ts);
     document.getElementById('inboxList').innerHTML = list.map(m => `
       <div class="inbox-item ${m.read ? '' : 'unread'} ${openMsgId===m.id ? 'active' : ''}" onclick="openMessage(${m.id})">
         <div class="from">${esc(m.from)} <time>${timeAgo(m.ts)}</time></div>
@@ -2320,16 +2268,11 @@
       </div>
     `).join('') || '<div style="padding:40px;text-align:center;color:var(--muted)">Inbox empty.</div>';
   }
-  async function openMessage(id) {
-    const m = state.inbox.find(x => x.id === id);
+  function openMessage(id) {
+    const list = load(KEYS.inbox, []);
+    const m = list.find(x => x.id === id);
     if (!m) return;
-    if (!m.read) {
-      m.read = true;
-      state.inboxRead[user.id] = state.inboxRead[user.id] || {};
-      state.inboxRead[user.id][id] = true;
-      persistInboxRead();
-      api('/api/inbox/' + id + '/read', { method: 'PATCH' }).catch(()=>{});
-    }
+    m.read = true; save(KEYS.inbox, list);
     openMsgId = id;
 
     const field = (label, value, opts = {}) => {
@@ -2406,41 +2349,46 @@
     refresh(); renderInbox();
   }
 
-  async function convertToProspect(msgId) {
-    const m = state.inbox.find(x => x.id === msgId);
+  function convertToProspect(msgId) {
+    const m = load(KEYS.inbox, []).find(x => x.id === msgId);
     if (!m) return;
-    const created = await api('/api/clients', { method: 'POST', body: {
+    const clients = load(KEYS.clients, []);
+    clients.unshift({
+      id: Date.now(),
       name: m.company || m.from || 'New prospect',
       contact: m.from || '—',
       industry: m.service || '—',
-      email: m.email || '', phone: m.phone || '',
-      type: 'prospect', status: 'pending', stage: 'lead', value: 0,
-      firstJob: m.service || ''
-    }});
-    if (created?.id) {
-      await api('/api/clients/' + created.id + '/notes', { method: 'POST',
-        body: { text: `Inbound message from ${m.from}${m.email ? ' <' + m.email + '>' : ''}:\n${m.message || m.body || ''}\n\n— Converted from inbox${m.ip ? ` (IP ${m.ip}${m.city ? ', ' + m.city : ''})` : ''}.` }
-      });
-    }
-    await refresh();
+      email: m.email || '',
+      phone: m.phone || '',
+      type: 'prospect',
+      status: 'pending',
+      stage: 'lead',
+      value: 0,
+      since: new Date().toISOString().slice(0,10),
+      jobs: m.service ? [{ id: Date.now()+1, title: m.service, status: 'planned', value: 0 }] : [],
+      notes: [
+        { id: Date.now()+2, ts: m.ts, author: m.from || 'Web form', text: `Inbound message:\n${m.message || m.body || ''}` },
+        { id: Date.now()+3, ts: Date.now(), author: user?.name || 'Team', text: `Converted from inbox submission${m.ip ? ` (IP ${m.ip}${m.city ? ', ' + m.city : ''})` : ''}.` }
+      ]
+    });
+    save(KEYS.clients, clients);
+    refresh();
     toast({ title: 'Prospect created', msg: `${m.company || m.from} added to CRM.`, duration: 4000 });
   }
   async function deleteMessage(id) {
     const ok = await confirmDialog({ title: 'Delete message?', msg: 'This message will be permanently removed from the team inbox.', okText: 'Delete' });
     if (!ok) return;
-    await api('/api/inbox/' + id, { method: 'DELETE' });
+    save(KEYS.inbox, load(KEYS.inbox, []).filter(m => m.id !== id));
     openMsgId = null;
     document.getElementById('inboxView').innerHTML = '<div class="inbox-empty">Select a message to view it.</div>';
-    await loadInbox(); refresh(); renderInbox();
+    refresh(); renderInbox();
     toast({ type: 'info', title: 'Message deleted' });
   }
-  async function markAllRead() {
-    const unread = state.inbox.filter(m => !m.read).length;
-    state.inboxRead[user.id] = state.inboxRead[user.id] || {};
-    state.inbox.forEach(m => { m.read = true; state.inboxRead[user.id][m.id] = true; });
-    persistInboxRead();
-    await api('/api/inbox/read-all', { method: 'POST' }).catch(()=>{});
-    refresh(); renderInbox();
+  function markAllRead() {
+    const list = load(KEYS.inbox, []);
+    const unread = list.filter(m => !m.read).length;
+    list.forEach(m => m.read = true);
+    save(KEYS.inbox, list); refresh(); renderInbox();
     toast({ msg: unread ? `Marked ${unread} message${unread>1?'s':''} as read.` : 'Inbox already up to date.' });
   }
 
@@ -2456,7 +2404,7 @@
 
   /* ===== TEAM ===== */
   function renderTeam() {
-    const list = state.team;
+    const list = load(KEYS.team, []);
     const meId = user.id;
     const host = document.getElementById('teamGrid');
     if (!host) return;
@@ -2499,7 +2447,7 @@
     document.getElementById('modalTeam').classList.add('show');
   }
   function editTeamMember(id) {
-    const m = state.team.find(x => x.id === id); if (!m) return;
+    const m = load(KEYS.team, []).find(x => x.id === id); if (!m) return;
     editingTeamId = id;
     document.getElementById('tmTitle').textContent = 'Edit Team Member';
     document.getElementById('tmName').value = m.name || '';
@@ -2507,76 +2455,90 @@
     document.getElementById('tmEmail').value = m.email || '';
     document.getElementById('tmPhone').value = m.phone || '';
     document.getElementById('tmRole').value = m.role || 'Editor';
-    document.getElementById('tmPassword').value = '';
+    document.getElementById('tmPassword').value = m.password || '';
     document.getElementById('modalTeam').classList.add('show');
   }
-  async function saveTeamMember() {
+  function saveTeamMember() {
     const name = document.getElementById('tmName').value.trim();
     const email = document.getElementById('tmEmail').value.trim();
     const password = document.getElementById('tmPassword').value;
     if (!name || !email) { toast({ type: 'error', msg: 'Name and email are required.' }); return; }
     if (!editingTeamId && password.length < 4) { toast({ type: 'error', msg: 'Password must be at least 4 characters.' }); return; }
-    const body = {
-      name, email,
-      title: document.getElementById('tmTitle2').value.trim(),
-      phone: document.getElementById('tmPhone').value.trim(),
-      role: document.getElementById('tmRole').value
-    };
-    if (password) body.password = password;
+    const list = load(KEYS.team, []);
     if (editingTeamId) {
-      await api('/api/team/' + editingTeamId, { method: 'PUT', body });
-      if (editingTeamId === user.id) await loadMe();
+      const m = list.find(x => x.id === editingTeamId); if (!m) return;
+      m.name = name; m.email = email;
+      m.title = document.getElementById('tmTitle2').value.trim();
+      m.phone = document.getElementById('tmPhone').value.trim();
+      m.role = document.getElementById('tmRole').value;
+      if (password) m.password = password;
     } else {
-      body.color = AVATAR_COLORS[state.team.length % AVATAR_COLORS.length];
-      await api('/api/team', { method: 'POST', body });
+      if (list.some(x => x.email.toLowerCase() === email.toLowerCase())) {
+        toast({ type: 'error', msg: 'A team member with that email already exists.' }); return;
+      }
+      list.push({
+        id: Date.now(),
+        name, email, password,
+        title: document.getElementById('tmTitle2').value.trim(),
+        phone: document.getElementById('tmPhone').value.trim(),
+        role: document.getElementById('tmRole').value,
+        color: AVATAR_COLORS[list.length % AVATAR_COLORS.length],
+        avatar: '',
+        joinedAt: new Date().toISOString().slice(0,10)
+      });
     }
+    save(KEYS.team, list);
     closeModal('modalTeam');
-    await loadTeam();
     if (editingTeamId === user.id) applyUserToUI();
     refresh();
     toast({ title: editingTeamId ? 'Member updated' : 'Member added', msg: name });
   }
   async function removeTeamMember(id) {
-    const m = state.team.find(x => x.id === id);
+    const m = load(KEYS.team, []).find(x => x.id === id);
     const ok = await confirmDialog({ title: 'Remove team member?', msg: `${m?.name || 'This person'} will lose access to the control panel.`, okText: 'Remove' });
     if (!ok) return;
-    await api('/api/team/' + id, { method: 'DELETE' });
-    await loadTeam(); refresh();
+    save(KEYS.team, load(KEYS.team, []).filter(x => x.id !== id));
+    refresh();
     toast({ type: 'info', title: 'Removed', msg: m?.name || '' });
   }
 
   /* ===== PROFILE ===== */
-  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+  document.getElementById('profileForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    const list = load(KEYS.team, []);
+    const me = list.find(x => x.id === user.id);
+    if (!me) return;
     const newEmail = document.getElementById('pfEmail').value.trim();
     if (!newEmail) { toast({ type: 'error', msg: 'Email is required.' }); return; }
+    if (list.some(x => x.id !== me.id && x.email.toLowerCase() === newEmail.toLowerCase())) {
+      toast({ type: 'error', msg: 'Another team member already uses that email.' }); return;
+    }
+    me.name = document.getElementById('pfName').value.trim() || me.name;
+    me.title = document.getElementById('pfTitle').value.trim();
+    me.email = newEmail;
+    me.phone = document.getElementById('pfPhone').value.trim();
+    me.avatar = document.getElementById('pfAvatar').value.trim();
     const swatch = document.querySelector('#pfColorPicker .swatch.on');
-    try {
-      await api('/api/me', { method: 'PUT', body: {
-        name: document.getElementById('pfName').value.trim() || state.me?.name,
-        title: document.getElementById('pfTitle').value.trim(),
-        email: newEmail,
-        phone: document.getElementById('pfPhone').value.trim(),
-        avatar_url: document.getElementById('pfAvatar').value.trim(),
-        color: swatch ? swatch.dataset.color : (state.me?.color || '#d30000')
-      }});
-      await loadMe(); await loadTeam();
-      applyUserToUI(); refresh();
-      toast({ title: 'Profile updated', msg: 'Your changes have been saved.' });
-    } catch(_) {}
+    if (swatch) me.color = swatch.dataset.color;
+    save(KEYS.team, list);
+    user.email = me.email; user.name = me.name;
+    localStorage.setItem('lm_user', JSON.stringify(user));
+    applyUserToUI(); refresh();
+    toast({ title: 'Profile updated', msg: 'Your changes have been saved.' });
   });
-  document.getElementById('pwdForm').addEventListener('submit', async (e) => {
+  document.getElementById('pwdForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    const list = load(KEYS.team, []);
+    const me = list.find(x => x.id === user.id);
     const cur = document.getElementById('pwdCurrent').value;
     const nw = document.getElementById('pwdNew').value;
     const cf = document.getElementById('pwdConfirm').value;
+    if (me.password && cur !== me.password) { toast({ type: 'error', msg: 'Current password is incorrect.' }); return; }
     if (nw.length < 4) { toast({ type: 'error', msg: 'New password must be at least 4 characters.' }); return; }
     if (nw !== cf) { toast({ type: 'error', msg: 'New passwords do not match.' }); return; }
-    try {
-      await api('/api/me/password', { method: 'POST', body: { current: cur, next: nw } });
-      document.getElementById('pwdForm').reset();
-      toast({ title: 'Password changed', msg: 'Use your new password next time you sign in.' });
-    } catch(_) {}
+    me.password = nw; save(KEYS.team, list);
+    document.getElementById('pwdForm').reset();
+    toast({ title: 'Password changed', msg: 'Use your new password next time you sign in.' });
   });
 
   /* ===== PROFILE PHOTO UPLOAD ===== */
@@ -2609,7 +2571,7 @@
   }
   function removePhoto() {
     document.getElementById('pfAvatar').value = '';
-    const me = state.me;
+    const me = load(KEYS.team, []).find(x => x.id === user.id);
     const initial = (me?.name || 'L').slice(0,1).toUpperCase();
     document.getElementById('profAvatar').textContent = initial;
     document.getElementById('removePhotoBtn').style.display = 'none';
@@ -2617,26 +2579,38 @@
   }
 
   /* ===== CHAT ===== */
-  function dmChannelId(a, b) { return 'dm:' + [Number(a), Number(b)].sort((x,y)=>x-y).join('-'); }
+  function dmChannelId(a, b) { return 'dm:' + [a, b].sort((x,y)=>x-y).join('-'); }
   function unreadMessageCount() {
-    // Count messages in active state.messages newer than last-seen for active channel
-    const myReads = state.chatRead[user.id] || {};
-    return state.messages.filter(m => m.fromId !== user.id && (myReads[m.channel] || 0) < m.ts).length;
+    const msgs = load(KEYS.messages, []);
+    const reads = load(KEYS.chatRead, {});
+    const myReads = reads[user.id] || {};
+    let n = 0;
+    msgs.forEach(m => {
+      if (m.fromId === user.id) return;
+      const isMine = m.channel === 'general' || m.channel.startsWith('dm:') && m.channel.includes('-' + user.id) || m.channel === dmChannelId(user.id, m.fromId);
+      // simplified: show all general + DMs that include me
+      if (m.channel === 'general' || (m.channel.startsWith('dm:') && m.channel.includes(String(user.id)))) {
+        if ((myReads[m.channel] || 0) < m.ts) n++;
+      }
+    });
+    return n;
   }
 
   let activeChannel = 'general';
-  async function renderChat() {
-    try { await loadMessages(activeChannel); } catch(_) {}
-    const team = state.team;
-    const msgs = state.messages;
-    const myReads = state.chatRead[user.id] || {};
+  function renderChat() {
+    const team = load(KEYS.team, []);
+    const msgs = load(KEYS.messages, []);
+    const reads = load(KEYS.chatRead, {});
+    const myReads = reads[user.id] || {};
 
-    // Channels list
+    // Channels (just General for now)
     const chHost = document.getElementById('chatChannels');
+    const generalUnread = msgs.filter(m => m.channel === 'general' && m.fromId !== user.id && (myReads['general'] || 0) < m.ts).length;
     chHost.innerHTML = `
       <div class="chat-channel ${activeChannel === 'general' ? 'active' : ''}" onclick="openChannel('general')">
         <span class="ic">${icon('hash', 16)}</span>
         <span class="name">general</span>
+        ${generalUnread ? `<span class="badge">${generalUnread}</span>` : ''}
       </div>
     `;
 
@@ -2653,16 +2627,22 @@
         const av = t.avatar
           ? `<div class="chat-mini-avatar"><img src="${escUrl(t.avatar)}" alt=""/></div>`
           : `<div class="chat-mini-avatar" style="background:${safeColor}">${esc(initial)}</div>`;
+        const unread = msgs.filter(m => m.channel === ch && m.fromId !== user.id && (myReads[ch] || 0) < m.ts).length;
         return `
-          <div class="chat-channel ${activeChannel === ch ? 'active' : ''}" onclick="openChannel('${esc(ch)}')">
+          <div class="chat-channel ${activeChannel === ch ? 'active' : ''}" onclick="openChannel('${esc(ch)}', ${t.id})">
             ${av}
             <span class="name">${esc(t.name)}</span>
+            ${unread ? `<span class="badge">${unread}</span>` : ''}
           </div>
         `;
       }).join('');
     }
 
     // Main pane
+    if (!activeChannel) {
+      document.getElementById('chatMain').innerHTML = '<div class="chat-empty">Pick a channel or member to start chatting.</div>';
+      return;
+    }
     let title, subtitle;
     if (activeChannel === 'general') {
       title = '# general';
@@ -2673,12 +2653,12 @@
       title = other.name;
       subtitle = `Direct message · ${other.email || ''}`;
     }
-    const visible = msgs.slice().sort((a,b) => a.ts - b.ts);
+    const visible = msgs.filter(m => m.channel === activeChannel).sort((a,b) => a.ts - b.ts);
 
-    // Mark channel read locally
-    state.chatRead[user.id] = state.chatRead[user.id] || {};
-    state.chatRead[user.id][activeChannel] = Date.now();
-    persistChatRead();
+    // Mark channel read
+    reads[user.id] = reads[user.id] || {};
+    reads[user.id][activeChannel] = Date.now();
+    save(KEYS.chatRead, reads);
 
     let lastDay = '';
     const msgHTML = visible.map(m => {
@@ -2733,22 +2713,33 @@
   }
   function autoGrow(t) { t.style.height = 'auto'; t.style.height = Math.min(120, t.scrollHeight) + 'px'; }
   function openChannel(id) { activeChannel = id; renderChat(); }
-  async function sendMessage() {
+  function sendMessage() {
     const ta = document.getElementById('chatInput');
     const text = (ta?.value || '').trim();
     if (!text) return;
+    const me = load(KEYS.team, []).find(x => x.id === user.id) || user;
+    const msgs = load(KEYS.messages, []);
+    msgs.push({
+      id: Date.now() + Math.random(),
+      channel: activeChannel,
+      fromId: user.id,
+      fromName: me.name,
+      fromColor: me.color,
+      fromAvatar: me.avatar || '',
+      text,
+      ts: Date.now()
+    });
+    save(KEYS.messages, msgs);
     ta.value = ''; autoGrow(ta);
-    try {
-      await api('/api/messages', { method: 'POST', body: { channel: activeChannel, text } });
-      await renderChat();
-    } catch(_) {}
+    renderChat();
   }
 
-  /* ===== FINANCE ===== */
+  /* ===== FINANCE (localStorage version — no backend) ===== */
   const fmt$ = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  async function renderFinance() {
-    const isAdmin = (state.me?.role || user?.role) === 'Admin';
+  function renderFinance() {
+    const me = JSON.parse(localStorage.getItem('lm_user') || '{}');
+    const isAdmin = me.role === 'Admin' || !me.role; // single-user demo defaults to Admin
     const head = document.getElementById('finActions');
     const body = document.getElementById('finBody');
     document.getElementById('finTitle').textContent = isAdmin ? 'Finance' : 'My Earnings';
@@ -2756,34 +2747,37 @@
       ? 'Revenue, expenses, payroll. Add entries manually as money comes in or goes out.'
       : 'Your payment history.';
 
+    const txns = load(KEYS.transactions, []);
+    const pays = load(KEYS.payments, []);
+    const team = load(KEYS.team, []);
+
     if (!isAdmin) {
       head.innerHTML = '';
-      try {
-        const data = await api('/api/finance/my-earnings');
-        body.innerHTML = `
-          <div class="kpi-grid" style="grid-template-columns:1fr">
-            <div class="kpi" style="text-align:center;padding:32px">
-              <div class="label">Total earned to date</div>
-              <div class="value" style="font-size:48px;color:var(--good);margin:8px 0">${esc(fmt$(data.total))}</div>
-              <div class="delta">${data.history.length} payment${data.history.length===1?'':'s'} on record</div>
-            </div>
+      const myPays = pays.filter(p => p.team_id === me.id);
+      const total = myPays.reduce((s, p) => s + Number(p.amount || 0), 0);
+      body.innerHTML = `
+        <div class="kpi-grid" style="grid-template-columns:1fr">
+          <div class="kpi" style="text-align:center;padding:32px">
+            <div class="label">Total earned to date</div>
+            <div class="value" style="font-size:48px;color:var(--good);margin:8px 0">${esc(fmt$(total))}</div>
+            <div class="delta">${myPays.length} payment${myPays.length===1?'':'s'} on record</div>
           </div>
-          <div class="panel">
-            <h3>Payment history</h3>
-            ${data.history.length ? `
-              <table>
-                <thead><tr><th>Date</th><th>Amount</th><th>Period</th><th>Description</th></tr></thead>
-                <tbody>${data.history.map(p => `
-                  <tr>
-                    <td>${esc(new Date(p.paid_on).toLocaleDateString())}</td>
-                    <td><b style="color:var(--good)">${esc(fmt$(p.amount))}</b></td>
-                    <td>${esc(p.period || '—')}</td>
-                    <td>${esc(p.description || '—')}</td>
-                  </tr>`).join('')}
-                </tbody>
-              </table>` : `<div style="color:var(--muted);text-align:center;padding:30px">No payments recorded yet.</div>`}
-          </div>`;
-      } catch(_) {}
+        </div>
+        <div class="panel">
+          <h3>Payment history</h3>
+          ${myPays.length ? `
+            <table>
+              <thead><tr><th>Date</th><th>Amount</th><th>Period</th><th>Description</th></tr></thead>
+              <tbody>${myPays.slice().sort((a,b)=>new Date(b.paid_on)-new Date(a.paid_on)).map(p => `
+                <tr>
+                  <td>${esc(new Date(p.paid_on).toLocaleDateString())}</td>
+                  <td><b style="color:var(--good)">${esc(fmt$(p.amount))}</b></td>
+                  <td>${esc(p.period || '—')}</td>
+                  <td>${esc(p.description || '—')}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>` : `<div style="color:var(--muted);text-align:center;padding:30px">No payments recorded yet.</div>`}
+        </div>`;
       return;
     }
 
@@ -2793,48 +2787,61 @@
       <button class="btn-outline" onclick="openPayModal()">+ Payment</button>
       <button class="btn-red" onclick="openTxnModal('revenue')">+ Revenue</button>
     `;
-    body.innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px">Loading…</div>`;
-    let overview, txns, pays;
-    try {
-      [overview, txns, pays] = await Promise.all([
-        api('/api/finance/overview'),
-        api('/api/finance/transactions'),
-        api('/api/finance/payments')
-      ]);
-    } catch(_) { return; }
 
-    const netClass = overview.netProfit >= 0 ? 'good' : 'down';
-    const monthlyMax = Math.max(1, ...overview.monthly.flatMap(m => [m.revenue, m.expense]));
-    const monthlyHTML = overview.monthly.length
-      ? overview.monthly.map(m => `
-          <div style="display:flex;align-items:flex-end;gap:4px;height:80px">
-            <div style="flex:1;background:var(--good);border-radius:3px 3px 0 0;height:${(m.revenue/monthlyMax)*100}%" title="Revenue ${fmt$(m.revenue)}"></div>
-            <div style="flex:1;background:var(--red);border-radius:3px 3px 0 0;height:${(m.expense/monthlyMax)*100}%" title="Expenses ${fmt$(m.expense)}"></div>
-          </div>
-          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">${esc(m.month.slice(5))}</div>`).join('')
-      : '<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;grid-column:1/-1">No transactions yet.</div>';
+    const revenue = txns.filter(t => t.kind === 'revenue').reduce((s, t) => s + Number(t.amount || 0), 0);
+    const expenses = txns.filter(t => t.kind === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
+    const payroll = pays.reduce((s, p) => s + Number(p.amount || 0), 0);
+    const netProfit = revenue - expenses - payroll;
+    const netClass = netProfit >= 0 ? 'good' : 'down';
+
+    // 12 months bars
+    const months = [];
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      months.push({ key: k, label: k.slice(5), revenue: 0, expense: 0 });
+    }
+    const monthMap = Object.fromEntries(months.map(m => [m.key, m]));
+    txns.forEach(t => {
+      const k = (t.occurred_on || '').slice(0, 7);
+      if (monthMap[k]) monthMap[k][t.kind === 'revenue' ? 'revenue' : 'expense'] += Number(t.amount || 0);
+    });
+    const monthlyMax = Math.max(1, ...months.flatMap(m => [m.revenue, m.expense]));
+    const monthlyHTML = months.map(m => `
+      <div>
+        <div style="display:flex;align-items:flex-end;gap:4px;height:80px">
+          <div style="flex:1;background:var(--good);border-radius:3px 3px 0 0;height:${(m.revenue/monthlyMax)*100}%" title="Revenue ${fmt$(m.revenue)}"></div>
+          <div style="flex:1;background:var(--red);border-radius:3px 3px 0 0;height:${(m.expense/monthlyMax)*100}%" title="Expenses ${fmt$(m.expense)}"></div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">${esc(m.label)}</div>
+      </div>`).join('');
+
+    // Per-member paid totals
+    const byMember = team.map(t => {
+      const paid = pays.filter(p => p.team_id === t.id).reduce((s, p) => s + Number(p.amount || 0), 0);
+      return { ...t, paid };
+    }).sort((a, b) => b.paid - a.paid);
 
     body.innerHTML = `
       <div class="kpi-grid">
-        <div class="kpi"><div class="label">Total Revenue</div><div class="value" style="color:var(--good)">${esc(fmt$(overview.revenue))}</div><div class="delta">All-time</div></div>
-        <div class="kpi"><div class="label">Total Expenses</div><div class="value" style="color:var(--red)">${esc(fmt$(overview.expenses))}</div><div class="delta">All-time</div></div>
-        <div class="kpi"><div class="label">Payroll Paid</div><div class="value">${esc(fmt$(overview.payroll))}</div><div class="delta">${overview.byMember.filter(m=>m.paid>0).length} member(s)</div></div>
-        <div class="kpi"><div class="label">Net Profit</div><div class="value ${netClass==='down'?'':''}" style="color:${overview.netProfit>=0?'var(--good)':'var(--red)'}">${esc(fmt$(overview.netProfit))}</div><div class="delta ${netClass}">Revenue − Expenses − Payroll</div></div>
+        <div class="kpi"><div class="label">Total Revenue</div><div class="value" style="color:var(--good)">${esc(fmt$(revenue))}</div><div class="delta">All-time</div></div>
+        <div class="kpi"><div class="label">Total Expenses</div><div class="value" style="color:var(--red)">${esc(fmt$(expenses))}</div><div class="delta">All-time</div></div>
+        <div class="kpi"><div class="label">Payroll Paid</div><div class="value">${esc(fmt$(payroll))}</div><div class="delta">${byMember.filter(m=>m.paid>0).length} member(s)</div></div>
+        <div class="kpi"><div class="label">Net Profit</div><div class="value" style="color:${netProfit>=0?'var(--good)':'var(--red)'}">${esc(fmt$(netProfit))}</div><div class="delta ${netClass}">Revenue − Expenses − Payroll</div></div>
       </div>
 
       <div class="grid-2">
         <div class="panel">
           <h3>Last 12 Months <span style="font-size:11px;font-weight:500;color:var(--muted)">— green=revenue, red=expense</span></h3>
-          <div style="display:grid;grid-template-columns:repeat(${Math.max(1,overview.monthly.length)},1fr);gap:8px;align-items:end;min-height:120px">
-            ${monthlyHTML}
-          </div>
+          <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:8px;align-items:end;min-height:120px">${monthlyHTML}</div>
         </div>
         <div class="panel">
           <h3>Paid by Team Member</h3>
-          ${overview.byMember.length ? overview.byMember.map(m => {
+          ${byMember.length ? byMember.map(m => {
             const safeColor = /^#[0-9a-f]{3,8}$/i.test(m.color || '') ? m.color : '#d30000';
             const init = (m.name || '?').slice(0,1).toUpperCase();
-            const av = m.avatar_url ? `<img src="${escUrl(m.avatar_url)}" style="width:100%;height:100%;object-fit:cover"/>` : esc(init);
+            const av = m.avatar ? `<img src="${escUrl(m.avatar)}" style="width:100%;height:100%;object-fit:cover"/>` : esc(init);
             return `
               <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">
                 <div class="chat-mini-avatar" style="background:${safeColor};width:36px;height:36px;font-size:14px">${av}</div>
@@ -2849,40 +2856,39 @@
       </div>
 
       <div class="panel">
-        <h3>Transactions <span style="font-size:11px;font-weight:500;color:var(--muted)">— most recent 500</span></h3>
+        <h3>Transactions</h3>
         ${txns.length ? `
           <div style="overflow-x:auto"><table>
-            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Category</th><th>Client</th><th>By</th><th></th></tr></thead>
-            <tbody>${txns.map(t => `
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Description</th><th>Category</th><th></th></tr></thead>
+            <tbody>${txns.slice().sort((a,b)=>new Date(b.occurred_on)-new Date(a.occurred_on)).map(t => `
               <tr>
                 <td style="white-space:nowrap">${esc(new Date(t.occurred_on).toLocaleDateString())}</td>
-                <td><span class="pill" style="background:${t.kind==='revenue'?'rgba(22,163,74,0.12);color:var(--good)':'rgba(211,0,0,0.12);color:var(--red)'}">${t.kind}</span></td>
+                <td><span class="pill" style="background:${t.kind==='revenue'?'rgba(22,163,74,0.12);color:var(--good)':'rgba(211,0,0,0.12);color:var(--red)'}">${esc(t.kind)}</span></td>
                 <td><b style="color:${t.kind==='revenue'?'var(--good)':'var(--red)'}">${t.kind==='revenue'?'+':'−'}${esc(fmt$(t.amount))}</b></td>
                 <td>${esc(t.description)}</td>
                 <td style="color:var(--muted)">${esc(t.category || '—')}</td>
-                <td style="color:var(--muted)">${esc(t.client_name || '—')}</td>
-                <td style="color:var(--muted);font-size:12px">${esc(t.created_by_name || '—')}</td>
                 <td style="text-align:right"><button class="btn-ghost" onclick="deleteTransaction(${t.id})" style="padding:4px 8px;color:var(--muted)">${icon('trash',12)}</button></td>
               </tr>`).join('')}
             </tbody>
-          </table></div>` : '<div style="color:var(--muted);text-align:center;padding:30px">No transactions yet. Add one with the buttons above.</div>'}
+          </table></div>` : '<div style="color:var(--muted);text-align:center;padding:30px">No transactions yet. Use the buttons above to add one.</div>'}
       </div>
 
       <div class="panel">
-        <h3>Payroll <span style="font-size:11px;font-weight:500;color:var(--muted)">— team payments</span></h3>
+        <h3>Payroll</h3>
         ${pays.length ? `
           <div style="overflow-x:auto"><table>
-            <thead><tr><th>Date</th><th>Member</th><th>Amount</th><th>Period</th><th>Description</th><th>Recorded by</th><th></th></tr></thead>
-            <tbody>${pays.map(p => `
-              <tr>
+            <thead><tr><th>Date</th><th>Member</th><th>Amount</th><th>Period</th><th>Description</th><th></th></tr></thead>
+            <tbody>${pays.slice().sort((a,b)=>new Date(b.paid_on)-new Date(a.paid_on)).map(p => {
+              const m = team.find(t => t.id === p.team_id) || {};
+              return `<tr>
                 <td style="white-space:nowrap">${esc(new Date(p.paid_on).toLocaleDateString())}</td>
-                <td><b>${esc(p.team_name || '—')}</b><div style="font-size:11px;color:var(--muted)">${esc(p.team_email || '')}</div></td>
+                <td><b>${esc(m.name || '—')}</b><div style="font-size:11px;color:var(--muted)">${esc(m.email || '')}</div></td>
                 <td><b>${esc(fmt$(p.amount))}</b></td>
                 <td style="color:var(--muted)">${esc(p.period || '—')}</td>
                 <td>${esc(p.description || '—')}</td>
-                <td style="color:var(--muted);font-size:12px">${esc(p.paid_by_name || '—')}</td>
                 <td style="text-align:right"><button class="btn-ghost" onclick="deletePayment(${p.id})" style="padding:4px 8px;color:var(--muted)">${icon('trash',12)}</button></td>
-              </tr>`).join('')}
+              </tr>`;
+            }).join('')}
             </tbody>
           </table></div>` : '<div style="color:var(--muted);text-align:center;padding:30px">No payments recorded yet.</div>'}
       </div>
@@ -2894,66 +2900,71 @@
     document.getElementById('txnTitle').textContent = kind === 'expense' ? 'Add Expense' : 'Add Revenue';
     ['txAmount','txDesc','txCategory'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('txDate').value = new Date().toISOString().slice(0,10);
-    const sel = document.getElementById('txClient');
-    sel.innerHTML = '<option value="">— None —</option>' + state.clients.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
     document.getElementById('modalTxn').classList.add('show');
   }
-  async function saveTransaction() {
-    const body = {
+  function saveTransaction() {
+    const amount = parseFloat(document.getElementById('txAmount').value);
+    const description = document.getElementById('txDesc').value.trim();
+    if (!amount || !description) { toast({ type: 'error', msg: 'Amount and description required.' }); return; }
+    const list = load(KEYS.transactions, []);
+    const t = {
+      id: Date.now(),
       kind: document.getElementById('txKind').value,
-      amount: parseFloat(document.getElementById('txAmount').value),
-      description: document.getElementById('txDesc').value.trim(),
+      amount, description,
       category: document.getElementById('txCategory').value.trim(),
-      occurred_on: document.getElementById('txDate').value || null,
-      client_id: parseInt(document.getElementById('txClient').value, 10) || null
+      occurred_on: document.getElementById('txDate').value || new Date().toISOString().slice(0,10)
     };
-    if (!body.amount || !body.description) { toast({ type: 'error', msg: 'Amount and description required.' }); return; }
-    await api('/api/finance/transactions', { method: 'POST', body });
-    closeModal('modalTxn'); await renderFinance();
-    toast({ title: body.kind === 'revenue' ? 'Revenue logged' : 'Expense logged', msg: fmt$(body.amount) + ' — ' + body.description });
+    list.unshift(t);
+    save(KEYS.transactions, list);
+    closeModal('modalTxn'); renderFinance();
+    toast({ title: t.kind === 'revenue' ? 'Revenue logged' : 'Expense logged', msg: fmt$(amount) + ' — ' + description });
   }
   async function deleteTransaction(id) {
     const ok = await confirmDialog({ title: 'Delete entry?', msg: 'This transaction will be permanently removed.', okText: 'Delete' });
     if (!ok) return;
-    await api('/api/finance/transactions/' + id, { method: 'DELETE' });
-    await renderFinance(); toast({ type: 'info', title: 'Deleted' });
+    save(KEYS.transactions, load(KEYS.transactions, []).filter(t => t.id !== id));
+    renderFinance(); toast({ type: 'info', title: 'Deleted' });
   }
 
   function openPayModal() {
+    const team = load(KEYS.team, []);
     const sel = document.getElementById('payTeam');
-    sel.innerHTML = state.team.map(t => `<option value="${t.id}">${esc(t.name)} — ${esc(t.email)}</option>`).join('');
+    sel.innerHTML = team.map(t => `<option value="${t.id}">${esc(t.name)} — ${esc(t.email)}</option>`).join('');
     ['payAmount','payPeriod','payDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('payDate').value = new Date().toISOString().slice(0,10);
     document.getElementById('modalPay').classList.add('show');
   }
-  async function savePayment() {
-    const body = {
-      team_id: parseInt(document.getElementById('payTeam').value, 10),
-      amount: parseFloat(document.getElementById('payAmount').value),
+  function savePayment() {
+    const team_id = parseInt(document.getElementById('payTeam').value, 10);
+    const amount = parseFloat(document.getElementById('payAmount').value);
+    if (!team_id || !amount) { toast({ type: 'error', msg: 'Team member and amount required.' }); return; }
+    const list = load(KEYS.payments, []);
+    list.unshift({
+      id: Date.now(), team_id, amount,
       period: document.getElementById('payPeriod').value.trim(),
       description: document.getElementById('payDesc').value.trim(),
-      paid_on: document.getElementById('payDate').value || null
-    };
-    if (!body.team_id || !body.amount) { toast({ type: 'error', msg: 'Team member and amount required.' }); return; }
-    await api('/api/finance/payments', { method: 'POST', body });
-    closeModal('modalPay'); await renderFinance();
-    const m = state.team.find(t => t.id === body.team_id);
-    toast({ title: 'Payment recorded', msg: `${fmt$(body.amount)} → ${m?.name || ''}` });
+      paid_on: document.getElementById('payDate').value || new Date().toISOString().slice(0,10)
+    });
+    save(KEYS.payments, list);
+    closeModal('modalPay'); renderFinance();
+    const m = load(KEYS.team, []).find(t => t.id === team_id);
+    toast({ title: 'Payment recorded', msg: `${fmt$(amount)} → ${m?.name || ''}` });
   }
   async function deletePayment(id) {
     const ok = await confirmDialog({ title: 'Delete payment?', msg: 'This payment record will be permanently removed.', okText: 'Delete' });
     if (!ok) return;
-    await api('/api/finance/payments/' + id, { method: 'DELETE' });
-    await renderFinance(); toast({ type: 'info', title: 'Deleted' });
+    save(KEYS.payments, load(KEYS.payments, []).filter(p => p.id !== id));
+    renderFinance(); toast({ type: 'info', title: 'Deleted' });
   }
 
-  /* ===== EXPORT (server-side recent visits) ===== */
+  /* ===== EXPORT / RESET TRACKING ===== */
   function exportCSV() {
-    const recent = state.analytics?.recent || [];
-    if (!recent.length) { toast({ type: 'error', msg: 'No visit data to export.' }); return; }
-    const rows = [['Timestamp','IP','City','Country','Page','Referrer']];
-    recent.forEach(v => rows.push([
-      new Date(v.ts).toISOString(), v.ip || '', v.city || '', v.country || '', v.page || '', v.referrer || ''
+    const visits = load(KEYS.visits, []);
+    if (!visits.length) { toast({ type: 'error', msg: 'No visit data to export.' }); return; }
+    const rows = [['Timestamp','IP','City','Region','Country','Page','Referrer','SessionId','UserAgent']];
+    visits.forEach(v => rows.push([
+      new Date(v.ts).toISOString(), v.ip, v.city, v.region || '', v.country, v.page,
+      v.referrer || '', v.sessionId, (v.ua || '').replace(/,/g,';')
     ]));
     const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -2961,49 +2972,61 @@
     a.href = URL.createObjectURL(blob);
     a.download = `logic-analytics-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
-    toast({ title: 'Exported', msg: `${recent.length} visit records downloaded.` });
+    toast({ title: 'Exported', msg: `${visits.length} visit records downloaded.` });
   }
   async function clearVisitData() {
-    toast({ type: 'info', msg: 'Wipe tracking data via the database directly (no API endpoint exposed).' });
+    const ok = await confirmDialog({ title: 'Reset all tracking data?', msg: 'All visitor records, IP logs, and click data will be permanently deleted.', okText: 'Reset' });
+    if (!ok) return;
+    localStorage.removeItem(KEYS.visits);
+    localStorage.removeItem(KEYS.clicks);
+    refresh(); renderAnalytics();
+    toast({ type: 'info', title: 'Tracking reset', msg: 'All visitor data has been cleared.' });
   }
 
-  /* ===== POLLING ===== */
-  let lastInboxCount = 0;
-  async function poll() {
-    try {
-      // Inbox poll for unread / new submission notifications
-      const before = state.inbox.length;
-      await loadInbox();
-      const after = state.inbox.length;
-      if (after > before && after > lastInboxCount) {
-        const fresh = state.inbox[0];
-        if (!document.getElementById('page-inbox').classList.contains('active')) {
-          toast({ type: 'info', title: 'New form submission', msg: `${fresh.from} — ${fresh.subject || ''}`, duration: 6000 });
-        }
-      }
-      lastInboxCount = after;
-      // Active page refresh
-      if (document.getElementById('page-messages').classList.contains('active')) renderChat();
-      if (document.getElementById('page-analytics').classList.contains('active')) renderAnalytics();
-      if (document.getElementById('page-inbox').classList.contains('active')) renderInbox();
-      // Always update header badges
-      document.getElementById('navInbox').textContent = state.inbox.filter(m => !m.read).length;
-    } catch(_) {}
-  }
-  setInterval(poll, 6000);
+  /* ===== AUTO-REFRESH ANALYTICS WHEN ACTIVE ===== */
+  setInterval(() => {
+    if (document.getElementById('page-analytics').classList.contains('active')) renderAnalytics();
+    if (document.getElementById('page-dashboard').classList.contains('active')) { renderDashChart(); refresh(); }
+  }, 15000);
 
   /* ===== INIT ===== */
   hydrateIcons();
-  (async () => {
-    try {
-      await loadMe();
-      await refresh();
-      applyUserToUI();
-      lastInboxCount = state.inbox.length;
-    } catch (e) {
-      console.error('Init failed', e);
+  applyUserToUI();
+  refresh();
+
+  // live-refresh when tracking data updates (cross-tab)
+  window.addEventListener('storage', (e) => {
+    if (e.key === KEYS.visits || e.key === KEYS.clicks) {
+      refresh();
+      if (document.getElementById('page-analytics').classList.contains('active')) renderAnalytics();
+      return;
     }
-  })();
+    if (e.key === KEYS.messages) {
+      refresh();
+      if (document.getElementById('page-messages').classList.contains('active')) renderChat();
+      // Toast for new DMs / @mentions if not on messages page
+      try {
+        const prev = JSON.parse(e.oldValue || '[]'); const next = JSON.parse(e.newValue || '[]');
+        if (next.length > prev.length) {
+          const m = next[next.length - 1];
+          if (m.fromId !== user.id && !document.getElementById('page-messages').classList.contains('active')) {
+            toast({ type: 'info', title: m.channel === 'general' ? `#general · ${m.fromName}` : `DM from ${m.fromName}`, msg: m.text.slice(0, 80) });
+          }
+        }
+      } catch(_){}
+      return;
+    }
+    if (e.key === KEYS.team) { applyUserToUI(); refresh(); return; }
+    if (e.key !== KEYS.inbox) return;
+    let prev = []; let next = [];
+    try { prev = JSON.parse(e.oldValue || '[]'); next = JSON.parse(e.newValue || '[]'); } catch(_) {}
+    refresh();
+    if (document.getElementById('page-inbox').classList.contains('active')) renderInbox();
+    if (next.length > prev.length) {
+      const fresh = next[0];
+      toast({ type: 'info', title: 'New message', msg: `${fresh.from} — ${fresh.subject}`, duration: 6000 });
+    }
+  });
 </script>
 </body>
 </html>
