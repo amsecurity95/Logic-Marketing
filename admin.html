@@ -108,6 +108,30 @@
   }
   .page-head h2 { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
   .page-head .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .qa-wrap { position: relative; }
+  .qa-menu {
+    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    padding: 6px; min-width: 280px; z-index: 60;
+  }
+  .qa-wrap.open .qa-menu { display: block; }
+  .qa-menu button {
+    width: 100%; display: flex; align-items: center; gap: 12px;
+    background: transparent; border: none; padding: 10px 12px;
+    border-radius: 8px; cursor: pointer; text-align: left;
+    transition: background .12s;
+  }
+  .qa-menu button:hover { background: #f4f5f7; }
+  .qa-menu .qa-ic {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(211,0,0,0.08); color: var(--red);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0; font-weight: 700;
+  }
+  .qa-menu button div { display: flex; flex-direction: column; min-width: 0; }
+  .qa-menu button b { font-size: 14px; color: var(--ink); font-weight: 600; }
+  .qa-menu button span { font-size: 12px; color: var(--muted); }
 
   /* ===== CARDS / KPI ===== */
   .kpi-grid {
@@ -1072,7 +1096,17 @@
             <h2 id="greetTitle">Welcome</h2>
             <div class="sub" id="greetSub">Overview of activity across the agency.</div>
           </div>
-          <button class="btn-red">+ Quick Action</button>
+          <div class="qa-wrap">
+            <button class="btn-red" id="qaBtn" onclick="toggleQuickAction()">+ Quick Action</button>
+            <div class="qa-menu" id="qaMenu">
+              <button onclick="qa('client')"><span class="qa-ic">👤</span><div><b>Add client</b><span>New active client record</span></div></button>
+              <button onclick="qa('prospect')"><span class="qa-ic">✨</span><div><b>Add prospect</b><span>Lead in your pipeline</span></div></button>
+              <button onclick="qa('equipment')"><span class="qa-ic">📷</span><div><b>Add equipment</b><span>Track gear or wishlist</span></div></button>
+              <button onclick="qa('expense')"><span class="qa-ic">💸</span><div><b>Log expense</b><span>Record a transaction</span></div></button>
+              <button onclick="qa('payment')"><span class="qa-ic">💰</span><div><b>Log payment</b><span>Income from a client</span></div></button>
+              <button onclick="qa('channel')"><span class="qa-ic">#</span><div><b>New channel</b><span>Private team chat</span></div></button>
+            </div>
+          </div>
         </div>
         <div class="kpi-grid">
           <div class="kpi"><div class="label">Active Clients</div><div class="value" id="kpiClients">0</div><div class="delta">↑ 12% this month</div></div>
@@ -1724,6 +1758,34 @@
     if (p === 'messages') renderChat();
     window.scrollTo(0,0);
   }
+
+  function toggleQuickAction(force) {
+    const wrap = document.querySelector('.qa-wrap');
+    if (!wrap) return;
+    const open = typeof force === 'boolean' ? force : !wrap.classList.contains('open');
+    wrap.classList.toggle('open', open);
+  }
+  function qa(kind) {
+    toggleQuickAction(false);
+    if (kind === 'client' || kind === 'prospect') {
+      show('clients'); openClientModal();
+      setTimeout(() => { const t = document.getElementById('cType'); if (t) t.value = kind; }, 0);
+    } else if (kind === 'equipment') {
+      show('equipment'); openEqModal();
+    } else if (kind === 'expense') {
+      show('finance'); setTimeout(() => openTxnModal && openTxnModal('expense'), 50);
+    } else if (kind === 'payment') {
+      show('finance'); setTimeout(() => openPayModal && openPayModal(), 50);
+    } else if (kind === 'channel') {
+      show('messages'); openChannelModal();
+    }
+  }
+  document.addEventListener('click', (e) => {
+    const wrap = document.querySelector('.qa-wrap');
+    if (wrap && wrap.classList.contains('open') && !e.target.closest('.qa-wrap')) {
+      wrap.classList.remove('open');
+    }
+  });
 
   /* ===== STORAGE ===== */
   const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', channels: 'lm_channels', transactions: 'lm_transactions', payments: 'lm_payments' };
