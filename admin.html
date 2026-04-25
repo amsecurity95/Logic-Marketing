@@ -3327,51 +3327,20 @@
     const isAdmin = me.role === 'Admin' || !me.role; // single-user demo defaults to Admin
     const head = document.getElementById('finActions');
     const body = document.getElementById('finBody');
-    document.getElementById('finTitle').textContent = isAdmin ? 'Finance' : 'My Earnings';
+    document.getElementById('finTitle').textContent = 'Finance';
     document.getElementById('finSub').textContent = isAdmin
-      ? 'Revenue, expenses, payroll. Add entries manually as money comes in or goes out.'
-      : 'Your payment history.';
+      ? 'Company performance, transactions, and payroll. Add entries manually as money comes in or goes out.'
+      : 'Company performance and your personal payment history.';
 
     const txns = load(KEYS.transactions, []);
     const pays = load(KEYS.payments, []);
     const team = load(KEYS.team, []);
 
-    if (!isAdmin) {
-      head.innerHTML = '';
-      const myPays = pays.filter(p => p.team_id === me.id);
-      const total = myPays.reduce((s, p) => s + Number(p.amount || 0), 0);
-      body.innerHTML = `
-        <div class="kpi-grid" style="grid-template-columns:1fr">
-          <div class="kpi" style="text-align:center;padding:32px">
-            <div class="label">Total earned to date</div>
-            <div class="value" style="font-size:48px;color:var(--good);margin:8px 0">${esc(fmt$(total))}</div>
-            <div class="delta">${myPays.length} payment${myPays.length===1?'':'s'} on record</div>
-          </div>
-        </div>
-        <div class="panel">
-          <h3>Payment history</h3>
-          ${myPays.length ? `
-            <table>
-              <thead><tr><th>Date</th><th>Amount</th><th>Period</th><th>Description</th></tr></thead>
-              <tbody>${myPays.slice().sort((a,b)=>new Date(b.paid_on)-new Date(a.paid_on)).map(p => `
-                <tr>
-                  <td>${esc(new Date(p.paid_on).toLocaleDateString())}</td>
-                  <td><b style="color:var(--good)">${esc(fmt$(p.amount))}</b></td>
-                  <td>${esc(p.period || '—')}</td>
-                  <td>${esc(p.description || '—')}</td>
-                </tr>`).join('')}
-              </tbody>
-            </table>` : `<div style="color:var(--muted);text-align:center;padding:30px">No payments recorded yet.</div>`}
-        </div>`;
-      return;
-    }
-
-    // Admin view
-    head.innerHTML = `
+    head.innerHTML = isAdmin ? `
       <button class="btn-outline" onclick="openTxnModal('expense')">+ Expense</button>
       <button class="btn-outline" onclick="openPayModal()">+ Payment</button>
       <button class="btn-red" onclick="openTxnModal('revenue')">+ Revenue</button>
-    `;
+    ` : '';
 
     const revenue = txns.filter(t => t.kind === 'revenue').reduce((s, t) => s + Number(t.amount || 0), 0);
     const expenses = txns.filter(t => t.kind === 'expense').reduce((s, t) => s + Number(t.amount || 0), 0);
@@ -3379,7 +3348,7 @@
     const netProfit = revenue - expenses - payroll;
     const netClass = netProfit >= 0 ? 'good' : 'down';
 
-    // 12 months bars
+    // 12 months bars (company-level — visible to everyone)
     const months = [];
     const now = new Date();
     for (let i = 11; i >= 0; i--) {
@@ -3402,25 +3371,63 @@
         <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">${esc(m.label)}</div>
       </div>`).join('');
 
-    // Per-member paid totals
+    // Company KPIs — same numbers for everyone
+    const companyKpis = `
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">Company Revenue</div><div class="value" style="color:var(--good)">${esc(fmt$(revenue))}</div><div class="delta">All-time</div></div>
+        <div class="kpi"><div class="label">Company Expenses</div><div class="value" style="color:var(--red)">${esc(fmt$(expenses))}</div><div class="delta">All-time</div></div>
+        <div class="kpi"><div class="label">Total Payroll</div><div class="value">${esc(fmt$(payroll))}</div><div class="delta">${pays.length} payment${pays.length===1?'':'s'}</div></div>
+        <div class="kpi"><div class="label">Net Profit</div><div class="value" style="color:${netProfit>=0?'var(--good)':'var(--red)'}">${esc(fmt$(netProfit))}</div><div class="delta ${netClass}">Revenue − Expenses − Payroll</div></div>
+      </div>`;
+
+    const monthlyChart = `
+      <div class="panel">
+        <h3>Last 12 Months <span style="font-size:11px;font-weight:500;color:var(--muted)">— green=revenue, red=expense</span></h3>
+        <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:8px;align-items:end;min-height:120px">${monthlyHTML}</div>
+      </div>`;
+
+    if (!isAdmin) {
+      // Member view: company numbers + their own earnings only.
+      const myPays = pays.filter(p => p.team_id === me.id).sort((a,b) => new Date(b.paid_on) - new Date(a.paid_on));
+      const myTotal = myPays.reduce((s, p) => s + Number(p.amount || 0), 0);
+      body.innerHTML = `
+        ${companyKpis}
+        ${monthlyChart}
+        <div class="panel" style="margin-top:18px">
+          <h3>My Earnings <span style="font-size:11px;font-weight:500;color:var(--muted)">— private to you</span></h3>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:12px">
+            <div>
+              <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Total earned to date</div>
+              <div style="font-size:32px;font-weight:700;color:var(--good);line-height:1.1;margin-top:4px">${esc(fmt$(myTotal))}</div>
+            </div>
+            <div style="text-align:right;color:var(--muted);font-size:13px">${myPays.length} payment${myPays.length===1?'':'s'} on record</div>
+          </div>
+          ${myPays.length ? `
+            <div style="overflow-x:auto"><table>
+              <thead><tr><th>Date</th><th>Amount</th><th>Period</th><th>Description</th></tr></thead>
+              <tbody>${myPays.map(p => `
+                <tr>
+                  <td style="white-space:nowrap">${esc(new Date(p.paid_on).toLocaleDateString())}</td>
+                  <td><b style="color:var(--good)">${esc(fmt$(p.amount))}</b></td>
+                  <td style="color:var(--muted)">${esc(p.period || '—')}</td>
+                  <td>${esc(p.description || '—')}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table></div>` : '<div style="color:var(--muted);text-align:center;padding:24px 0">No payments yet — your earnings will show here once admin records them.</div>'}
+        </div>`;
+      return;
+    }
+
+    // Admin view — full breakdown
     const byMember = team.map(t => {
       const paid = pays.filter(p => p.team_id === t.id).reduce((s, p) => s + Number(p.amount || 0), 0);
       return { ...t, paid };
     }).sort((a, b) => b.paid - a.paid);
 
     body.innerHTML = `
-      <div class="kpi-grid">
-        <div class="kpi"><div class="label">Total Revenue</div><div class="value" style="color:var(--good)">${esc(fmt$(revenue))}</div><div class="delta">All-time</div></div>
-        <div class="kpi"><div class="label">Total Expenses</div><div class="value" style="color:var(--red)">${esc(fmt$(expenses))}</div><div class="delta">All-time</div></div>
-        <div class="kpi"><div class="label">Payroll Paid</div><div class="value">${esc(fmt$(payroll))}</div><div class="delta">${byMember.filter(m=>m.paid>0).length} member(s)</div></div>
-        <div class="kpi"><div class="label">Net Profit</div><div class="value" style="color:${netProfit>=0?'var(--good)':'var(--red)'}">${esc(fmt$(netProfit))}</div><div class="delta ${netClass}">Revenue − Expenses − Payroll</div></div>
-      </div>
-
+      ${companyKpis}
       <div class="grid-2">
-        <div class="panel">
-          <h3>Last 12 Months <span style="font-size:11px;font-weight:500;color:var(--muted)">— green=revenue, red=expense</span></h3>
-          <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:8px;align-items:end;min-height:120px">${monthlyHTML}</div>
-        </div>
+        ${monthlyChart}
         <div class="panel">
           <h3>Paid by Team Member</h3>
           ${byMember.length ? byMember.map(m => {
