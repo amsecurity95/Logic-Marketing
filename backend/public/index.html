@@ -1690,7 +1690,7 @@
   (function(){
     const form = document.getElementById('lmContactForm');
     if (!form) return;
-    form.addEventListener('submit', async function(e){
+    form.addEventListener('submit', function(e){
       e.preventDefault();
       const name = document.getElementById('lmName').value.trim();
       const email = document.getElementById('lmEmail').value.trim();
@@ -1698,34 +1698,33 @@
       const service = document.getElementById('lmService').value;
       const message = document.getElementById('lmMessage').value.trim();
       if (!name || !email || !message) return;
+      let inbox = [];
+      try { inbox = JSON.parse(localStorage.getItem('lm_inbox') || '[]'); } catch(_) {}
       let geo = {};
       try { geo = JSON.parse(localStorage.getItem('lm_geo') || '{}') || {}; } catch(_) {}
-      const payload = {
-        name, email, company, service, message,
+      inbox.unshift({
+        id: Date.now(),
+        from: name,
+        email,
+        company,
+        service,
+        message,
+        subject: service + (company ? ' — ' + company : ''),
+        body: message,
         source: 'Contact form — index.html',
         page: window.location.pathname.split('/').pop() || 'index.html',
         referrer: document.referrer || 'direct',
-        city: geo.city || '', country: geo.country || '', flag: geo.flag || '',
-        language: navigator.language || ''
-      };
-      const msg = document.getElementById('lmMsg');
-      try {
-        const r = await fetch('/api/inbox', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        if (!r.ok) throw new Error('api');
-      } catch (_) {
-        // Offline fallback to localStorage so messages aren't lost
-        let inbox = [];
-        try { inbox = JSON.parse(localStorage.getItem('lm_inbox') || '[]'); } catch(_) {}
-        inbox.unshift({ id: Date.now(), from: name, email, company, service, message,
-          subject: service + (company ? ' — ' + company : ''), body: message,
-          ts: Date.now(), read: false, ...payload });
-        localStorage.setItem('lm_inbox', JSON.stringify(inbox));
-      }
+        ip: geo.ip || '',
+        city: geo.city || '',
+        country: geo.country || '',
+        flag: geo.flag || '',
+        lang: navigator.language || '',
+        read: false,
+        ts: Date.now()
+      });
+      localStorage.setItem('lm_inbox', JSON.stringify(inbox));
       form.reset();
+      const msg = document.getElementById('lmMsg');
       msg.textContent = (document.documentElement.lang === 'fr' ? 'Message envoyé. Nous reviendrons vers vous rapidement.' : 'Message sent. We\'ll be in touch shortly.');
       setTimeout(() => { msg.textContent = ''; }, 6000);
     });
@@ -1747,7 +1746,7 @@
       <h4><span data-lang-en>Offices</span><span data-lang-fr>Bureaux</span></h4>
       <div class="footer-office">
         <div class="place"><span class="flag">🇺🇸</span> Illinois, USA</div>
-        <a href="tel:+14474108995">+1 447 410 8995</a>
+        <a href="tel:+18156836072">+1 (815) 683-6072</a>
       </div>
       <div class="footer-office">
         <div class="place"><span class="flag">🇨🇩</span> DRC</div>
@@ -1819,21 +1818,26 @@
       const sessionId = isNewSession ? 'sess_' + now + '_' + Math.random().toString(36).slice(2,8) : sess.id;
       save(SESSION, { id: sessionId, lastSeen: now });
 
-      // 3. Push pageview to backend (and keep a local copy as offline cache)
-      const visit = {
-        ts: now, sessionId, newSession: isNewSession,
-        city: geo.city, region: geo.region, country: geo.country,
-        country_code: geo.country_code, flag: geo.flag,
+      // 3. Push pageview
+      const visits = load(VISITS, []);
+      visits.push({
+        ts: now,
+        sessionId,
+        newSession: isNewSession,
+        ip: geo.ip,
+        city: geo.city,
+        region: geo.region,
+        country: geo.country,
+        country_code: geo.country_code,
+        flag: geo.flag,
         page: window.location.pathname.split('/').pop() || 'index.html',
         path: window.location.pathname,
         referrer: document.referrer || 'direct',
         ua: navigator.userAgent.slice(0, 160),
-        lang: navigator.language || '',
+        lang: (navigator.language || ''),
         screen: screen.width + 'x' + screen.height
-      };
-      fetch('/api/track/visit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(visit) }).catch(()=>{});
-      const visits = load(VISITS, []);
-      visits.push({ ...visit, ip: geo.ip });
+      });
+      // Cap at 5000 entries to keep localStorage healthy
       if (visits.length > 5000) visits.splice(0, visits.length - 5000);
       save(VISITS, visits);
 
@@ -1841,13 +1845,6 @@
       document.addEventListener('click', (e) => {
         const t = e.target.closest('a, button');
         if (!t) return;
-        const click = {
-          ts: Date.now(), sessionId,
-          page: window.location.pathname.split('/').pop() || 'index.html',
-          target: (t.textContent || t.getAttribute('aria-label') || t.getAttribute('href') || t.tagName).trim().slice(0, 80),
-          href: t.getAttribute('href') || ''
-        };
-        fetch('/api/track/click', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(click) }).catch(()=>{});
         const clicks = load(CLICKS, []);
         clicks.push({
           ts: Date.now(),
