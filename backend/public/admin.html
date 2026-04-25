@@ -133,6 +133,89 @@
   .qa-menu button b { font-size: 14px; color: var(--ink); font-weight: 600; }
   .qa-menu button span { font-size: 12px; color: var(--muted); }
 
+  /* ===== TO-DO ===== */
+  .todo-headline-wrap {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1c1c1e 100%);
+    color: #fff; border-radius: 14px; padding: 36px 32px; margin-bottom: 20px;
+    position: relative; overflow: hidden;
+  }
+  .todo-headline-wrap::before {
+    content: ''; position: absolute; right: -40px; top: -40px;
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(211,0,0,0.35), transparent 70%);
+    pointer-events: none;
+  }
+  .todo-headline {
+    font-size: clamp(28px, 5vw, 56px);
+    font-weight: 800; line-height: 1.1; letter-spacing: -0.02em;
+    color: #fff; outline: none; min-height: 1.2em; word-break: break-word;
+    position: relative; z-index: 1;
+  }
+  .todo-headline:empty::before {
+    content: attr(data-placeholder); color: rgba(255,255,255,0.35); font-weight: 700;
+  }
+  .todo-tracker {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .todo-tracker .stat {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 16px;
+  }
+  .todo-tracker .stat .label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px;
+  }
+  .todo-tracker .stat .value { font-size: 26px; font-weight: 700; color: var(--ink); line-height: 1; }
+  .todo-tracker .stat .delta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .todo-tracker .progress {
+    height: 8px; background: #f0f0f2; border-radius: 5px; overflow: hidden;
+    margin-top: 10px;
+  }
+  .todo-tracker .progress > div {
+    height: 100%; background: var(--good); border-radius: 5px; transition: width .3s;
+  }
+  .todo-input-row {
+    display: flex; gap: 10px; margin-bottom: 18px;
+  }
+  .todo-input-row input {
+    flex: 1; padding: 14px 18px; border: 1px solid var(--line);
+    border-radius: 10px; font-size: 15px; font-family: inherit; outline: none;
+    transition: border-color .15s;
+  }
+  .todo-input-row input:focus { border-color: var(--red); }
+  .todo-input-row button { padding: 14px 22px; border-radius: 10px; }
+  .todo-list { display: flex; flex-direction: column; gap: 8px; }
+  .todo-item {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px 18px;
+    transition: all .15s;
+  }
+  .todo-item:hover { border-color: rgba(0,0,0,0.18); }
+  .todo-item.done { opacity: 0.55; }
+  .todo-item .check {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line);
+    cursor: pointer; flex-shrink: 0; display: flex; align-items: center;
+    justify-content: center; transition: all .15s;
+  }
+  .todo-item .check:hover { border-color: var(--good); }
+  .todo-item.done .check { background: var(--good); border-color: var(--good); color: #fff; }
+  .todo-item .text {
+    flex: 1; font-size: 15px; color: var(--ink); line-height: 1.4;
+    word-break: break-word; outline: none;
+  }
+  .todo-item.done .text { text-decoration: line-through; color: var(--muted); }
+  .todo-item .x {
+    background: transparent; border: none; color: var(--muted); cursor: pointer;
+    font-size: 18px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0;
+    transition: all .12s;
+  }
+  .todo-item .x:hover { background: rgba(211,0,0,0.08); color: var(--red); }
+  .todo-empty {
+    text-align: center; color: var(--muted); padding: 60px 20px; font-size: 14px;
+  }
+
   /* ===== CARDS / KPI ===== */
   .kpi-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1081,6 +1164,7 @@
       <div class="nav-item" data-page="equipment"><span class="icon" data-icon="camera"></span>Equipment</div>
       <div class="nav-item" data-page="inbox"><span class="icon" data-icon="mail"></span>Inbox <span class="badge" id="navInbox">0</span></div>
       <div class="nav-item" data-page="messages"><span class="icon" data-icon="chat"></span>Messages <span class="badge" id="navMsgs">0</span></div>
+      <div class="nav-item" data-page="todo"><span class="icon" data-icon="check"></span>To-Do <span class="badge" id="navTodo">0</span></div>
       <div class="nav-section">Account</div>
       <div class="nav-item" data-page="finance"><span class="icon" data-icon="dollar"></span>Finance</div>
       <div class="nav-item" data-page="team"><span class="icon" data-icon="shield"></span>Team <span class="badge" id="navTeam">0</span></div>
@@ -1247,6 +1331,19 @@
             <div class="chat-empty">Pick a channel or member to start chatting.</div>
           </section>
         </div>
+      </section>
+
+      <!-- TO-DO -->
+      <section class="page" id="page-todo">
+        <div class="todo-headline-wrap">
+          <div class="todo-headline" id="todoHeadline" contenteditable="plaintext-only" spellcheck="false" data-placeholder="What's the mission today?"></div>
+        </div>
+        <div class="todo-tracker" id="todoTracker"></div>
+        <div class="todo-input-row">
+          <input id="todoInput" placeholder="Add a task and press Enter…" onkeydown="if(event.key==='Enter'){event.preventDefault();addTodo();}"/>
+          <button class="btn-red" onclick="addTodo()">+ Add</button>
+        </div>
+        <div class="todo-list" id="todoList"></div>
       </section>
 
       <!-- FINANCE -->
@@ -1756,6 +1853,7 @@
     if (p === 'profile') applyUserToUI();
     if (p === 'finance') renderFinance();
     if (p === 'messages') renderChat();
+    if (p === 'todo') renderTodos();
     window.scrollTo(0,0);
   }
 
@@ -1788,7 +1886,7 @@
   });
 
   /* ===== STORAGE ===== */
-  const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', channels: 'lm_channels', transactions: 'lm_transactions', payments: 'lm_payments' };
+  const KEYS = { clients: 'lm_clients', equipment: 'lm_equipment', inbox: 'lm_inbox', visits: 'lm_visits', clicks: 'lm_clicks', team: 'lm_team', messages: 'lm_messages', chatRead: 'lm_chat_read', channels: 'lm_channels', transactions: 'lm_transactions', payments: 'lm_payments', todos: 'lm_todos' };
   const AVATAR_COLORS = ['#d30000','#1c1c1e','#16a34a','#f59e0b','#0052D4','#8b5cf6','#ec4899','#0891b2'];
   const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };
   const save = (k, v, opts) => { localStorage.setItem(k, JSON.stringify(v)); if (!opts || !opts.silent) cloudSync.queue(k); };
@@ -1800,7 +1898,7 @@
      OR leave LM_SYNC_URL/LM_SYNC_TOKEN here. */
   const LM_SYNC_URL = window.LM_SYNC_URL || 'https://logic-marketing-store.aimarmwembo1.workers.dev';
   const LM_SYNC_TOKEN = window.LM_SYNC_TOKEN || 'lm-store-2026-aimar';
-  const SYNCABLE = ['clients','equipment','inbox','team','messages','channels','transactions','payments'];
+  const SYNCABLE = ['clients','equipment','inbox','team','messages','channels','transactions','payments','todos'];
   const STORAGE_TO_REMOTE = Object.fromEntries(SYNCABLE.map(k => [KEYS[k], k]));
   const REMOTE_TO_STORAGE = Object.fromEntries(SYNCABLE.map(k => [k, KEYS[k]]));
 
@@ -1990,6 +2088,7 @@
     document.getElementById('navInbox').textContent = inbox.filter(m=>!m.read).length;
     document.getElementById('navTeam').textContent = load(KEYS.team, []).length;
     document.getElementById('navMsgs').textContent = unreadMessageCount();
+    if (typeof updateTodoBadge === 'function') updateTodoBadge();
     renderDashChart();
     renderDashInbox();
     renderClients();
@@ -3318,6 +3417,132 @@
       document.querySelectorAll('.react-popover').forEach(p => p.style.display = 'none');
     }
   });
+
+  /* ===== TO-DO ===== */
+  function todoStore() {
+    const all = load(KEYS.todos, {});
+    const mine = all[user.id] || { headline: '', tasks: [], history: {} };
+    if (!Array.isArray(mine.tasks)) mine.tasks = [];
+    if (!mine.history || typeof mine.history !== 'object') mine.history = {};
+    return { all, mine };
+  }
+  function saveTodos(all) { save(KEYS.todos, all); refresh(); }
+  function todayKey() { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function recomputeHistory(mine) {
+    // History = day-by-day completion for the streak / total stats.
+    const today = todayKey();
+    const todayTasks = mine.tasks; // current open list represents today
+    const doneToday = todayTasks.filter(t => t.done).length;
+    mine.history[today] = { total: todayTasks.length, done: doneToday };
+  }
+  function streakDays(history) {
+    let n = 0; const d = new Date();
+    while (true) {
+      const k = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+      const h = history[k];
+      if (h && h.total > 0 && h.done >= h.total) { n++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return n;
+  }
+
+  function renderTodos() {
+    const { mine } = todoStore();
+    const headlineEl = document.getElementById('todoHeadline');
+    if (document.activeElement !== headlineEl) headlineEl.textContent = mine.headline || '';
+    headlineEl.oninput = () => {
+      const { all, mine } = todoStore();
+      mine.headline = headlineEl.textContent.slice(0, 200);
+      all[user.id] = mine; saveTodos(all);
+    };
+
+    const total = mine.tasks.length;
+    const done = mine.tasks.filter(t => t.done).length;
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const streak = streakDays(mine.history);
+    const allTimeDone = Object.values(mine.history).reduce((s, h) => s + (h.done || 0), 0);
+
+    document.getElementById('todoTracker').innerHTML = `
+      <div class="stat">
+        <div class="label">Today</div>
+        <div class="value">${done} / ${total}</div>
+        <div class="delta">${pct}% complete</div>
+        <div class="progress"><div style="width:${pct}%"></div></div>
+      </div>
+      <div class="stat">
+        <div class="label">Streak</div>
+        <div class="value">${streak}d</div>
+        <div class="delta">Days clearing the list</div>
+      </div>
+      <div class="stat">
+        <div class="label">Open tasks</div>
+        <div class="value">${total - done}</div>
+        <div class="delta">Still to do</div>
+      </div>
+      <div class="stat">
+        <div class="label">All-time done</div>
+        <div class="value">${allTimeDone}</div>
+        <div class="delta">Tasks shipped</div>
+      </div>
+    `;
+
+    const list = document.getElementById('todoList');
+    if (!mine.tasks.length) {
+      list.innerHTML = '<div class="todo-empty">Nothing on your list. Add the first thing you want to ship today.</div>';
+    } else {
+      list.innerHTML = mine.tasks.map(t => `
+        <div class="todo-item ${t.done ? 'done' : ''}" data-id="${t.id}">
+          <div class="check" onclick="toggleTodo(${t.id})">${t.done ? '✓' : ''}</div>
+          <div class="text" contenteditable="plaintext-only" spellcheck="false" onblur="editTodo(${t.id}, this.textContent)">${esc(t.text)}</div>
+          <button class="x" onclick="removeTodo(${t.id})" title="Remove">×</button>
+        </div>
+      `).join('');
+    }
+    updateTodoBadge();
+  }
+  function addTodo() {
+    const ta = document.getElementById('todoInput');
+    const text = (ta.value || '').trim();
+    if (!text) return;
+    const { all, mine } = todoStore();
+    mine.tasks.push({ id: Date.now(), text, done: false, ts: Date.now() });
+    recomputeHistory(mine);
+    all[user.id] = mine; saveTodos(all);
+    ta.value = '';
+    renderTodos();
+  }
+  function toggleTodo(id) {
+    const { all, mine } = todoStore();
+    const t = mine.tasks.find(x => x.id === id); if (!t) return;
+    t.done = !t.done; t.doneTs = t.done ? Date.now() : null;
+    recomputeHistory(mine);
+    all[user.id] = mine; saveTodos(all);
+    renderTodos();
+  }
+  function removeTodo(id) {
+    const { all, mine } = todoStore();
+    mine.tasks = mine.tasks.filter(x => x.id !== id);
+    recomputeHistory(mine);
+    all[user.id] = mine; saveTodos(all);
+    renderTodos();
+  }
+  function editTodo(id, text) {
+    const clean = (text || '').trim();
+    const { all, mine } = todoStore();
+    const t = mine.tasks.find(x => x.id === id); if (!t) return;
+    if (!clean) { mine.tasks = mine.tasks.filter(x => x.id !== id); }
+    else { t.text = clean.slice(0, 500); }
+    all[user.id] = mine; saveTodos(all);
+    renderTodos();
+  }
+  function updateTodoBadge() {
+    const badge = document.getElementById('navTodo');
+    if (!badge) return;
+    const { mine } = todoStore();
+    const open = mine.tasks.filter(t => !t.done).length;
+    badge.textContent = open;
+    badge.style.display = open ? '' : 'none';
+  }
 
   /* ===== FINANCE (localStorage version — no backend) ===== */
   const fmt$ = (n) => '$' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
