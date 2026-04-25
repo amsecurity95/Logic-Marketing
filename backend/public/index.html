@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LOGIC MARKETING®</title>
+<link rel="icon" type="image/png" href="./favicon.png">
+<link rel="apple-touch-icon" href="./favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Paytone+One&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.65);
+    --line: rgba(255,255,255,0.12);
+    --red: #d30000;
+    --red-glow: rgba(211,0,0,0.45);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background-color: #0d0d0d;
+    overflow: hidden;
+  }
+  .hero-slide {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    will-change: opacity, transform;
+    transform-origin: center center;
+  }
+  .hero-slide img, .hero-slide video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+  .hero-slide video { object-position: center 20%; }
+  /* 21s total cycle, 3 slides × 7s each, 1s crossfade */
+  @keyframes slideZoomOut {
+    0%   { opacity: 0; transform: scale(1.22); }
+    4.76%  { opacity: 1; transform: scale(1.20); }   /* 1s — fade in */
+    28.57% { opacity: 1; transform: scale(1.02); }   /* 6s — zoom almost done */
+    33.33% { opacity: 0; transform: scale(1.00); }   /* 7s — fade out */
+    100% { opacity: 0; transform: scale(1.22); }
+  }
+  @keyframes slideZoomIn {
+    0%   { opacity: 0; transform: scale(1.00); }
+    4.76%  { opacity: 1; transform: scale(1.02); }
+    28.57% { opacity: 1; transform: scale(1.20); }
+    33.33% { opacity: 0; transform: scale(1.22); }
+    100% { opacity: 0; transform: scale(1.00); }
+  }
+  .hero-slide-1 { animation: slideZoomOut 21s ease-in-out infinite; animation-delay: 0s; }
+  .hero-slide-2 { animation: slideZoomIn  21s ease-in-out infinite; animation-delay: -14s; }
+  .hero-slide-3 { animation: slideZoomOut 21s ease-in-out infinite; animation-delay: -7s; }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-slide { animation: none !important; opacity: 1; }
+    .hero-slide-2, .hero-slide-3 { display: none; }
+  }
+  .hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(10,10,15,0.75) 0%, rgba(10,10,15,0.45) 30%, rgba(10,10,15,0.92) 100%),
+      radial-gradient(ellipse 70% 50% at 50% 40%, rgba(211,0,0,0.15), transparent 70%);
+  }
+
+  /* ===== NAVBAR ===== */
+  .navbar {
+    position: relative; z-index: 10;
+    padding: 28px 40px;
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 24px;
+  }
+  .logo {
+    display: inline-flex; align-items: center;
+    height: 44px;
+  }
+  .logo img {
+    height: 100%; width: auto;
+    display: block;
+    filter: brightness(0) saturate(100%) invert(13%) sepia(98%) saturate(7490%) hue-rotate(3deg) brightness(95%) contrast(115%) drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+  }
+  @media (max-width: 768px) {
+    .logo { height: 26px; }
+    .logo img {
+      filter: brightness(0) invert(1) drop-shadow(0 2px 8px rgba(0,0,0,0.4));
+    }
+  }
+  .nav-links {
+    display: flex; gap: 56px; list-style: none;
+    justify-content: center;
+  }
+  .nav-links a {
+    font-size: 0.95rem; font-weight: 400;
+    color: var(--text); transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--red); }
+  .nav-right {
+    display: flex; justify-content: flex-end;
+    align-items: center; gap: 16px;
+  }
+  .lang-toggle {
+    display: inline-flex; align-items: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px; padding: 4px;
+    font-size: 0.78rem; font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .lang-toggle button {
+    background: transparent; border: none;
+    color: var(--muted); cursor: pointer;
+    padding: 6px 12px; border-radius: 100px;
+    font-family: inherit; font-size: inherit; font-weight: inherit;
+    transition: all .2s;
+  }
+  .lang-toggle button.active {
+    background: var(--text); color: var(--bg);
+  }
+  .btn-contact {
+    padding: 12px 28px; border-radius: 100px;
+    background: var(--text); color: var(--bg);
+    font-size: 0.92rem; font-weight: 500;
+    transition: all .25s; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-contact:hover {
+    background: var(--red); color: var(--text);
+    box-shadow: 0 0 30px var(--red-glow);
+  }
+  .menu-toggle {
+    display: none; background: none; border: none;
+    color: var(--text); font-size: 1.4rem; cursor: pointer;
+  }
+
+  /* ===== SIDE MENU (Puzzle Mining style, red brand) ===== */
+  .side-menu-btn {
+    position: relative;
+    width: 44px; height: 44px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 2px;
+    cursor: pointer;
+    padding: 0;
+    transition: border-color .3s ease, background .3s ease;
+  }
+  .side-menu-btn:hover { border-color: var(--red); background: rgba(211,0,0,0.08); }
+  .side-menu-btn span {
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 1.5px;
+    background: var(--text);
+    transition: transform .35s cubic-bezier(.77,0,.175,1), opacity .2s ease, top .35s cubic-bezier(.77,0,.175,1);
+  }
+  .side-menu-btn span:nth-child(1) { top: 14px; }
+  .side-menu-btn span:nth-child(2) { top: 21px; }
+  .side-menu-btn span:nth-child(3) { top: 28px; }
+  body.side-menu-open .side-menu-btn span:nth-child(1) { top: 21px; transform: rotate(45deg); }
+  body.side-menu-open .side-menu-btn span:nth-child(2) { opacity: 0; }
+  body.side-menu-open .side-menu-btn span:nth-child(3) { top: 21px; transform: rotate(-45deg); }
+
+  .side-menu-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .4s ease;
+    z-index: 150;
+  }
+  body.side-menu-open .side-menu-backdrop { opacity: 1; pointer-events: auto; }
+
+  .side-menu {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 460px; max-width: 92vw;
+    background: #0A0A0A;
+    color: var(--text);
+    z-index: 200;
+    transform: translateX(100%);
+    transition: transform .55s cubic-bezier(.77,0,.175,1);
+    display: flex; flex-direction: column;
+    padding: 32px 48px 40px;
+    overflow-y: auto;
+    box-shadow: -30px 0 80px rgba(0,0,0,0.5);
+  }
+  body.side-menu-open .side-menu { transform: translateX(0); }
+  .side-menu-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(211,0,0,0.25);
+    margin-bottom: 44px;
+  }
+  .side-menu-head .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .side-menu-close {
+    width: 40px; height: 40px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.25);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 20px; line-height: 1;
+    border-radius: 2px;
+    transition: border-color .3s ease, background .3s ease;
+  }
+  .side-menu-close:hover { border-color: var(--red); background: rgba(211,0,0,0.08); }
+  .side-menu nav { display: flex; flex-direction: column; gap: 4px; }
+  .side-menu nav a {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    font-size: 38px;
+    line-height: 1.25;
+    color: var(--text);
+    text-decoration: none;
+    padding: 10px 0;
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    position: relative;
+    transition: color .3s ease, padding-left .45s cubic-bezier(.77,0,.175,1);
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  body.side-menu-open .side-menu nav a {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity .5s ease, transform .5s cubic-bezier(.23,1,.32,1), color .3s ease, padding-left .45s cubic-bezier(.77,0,.175,1);
+  }
+  body.side-menu-open .side-menu nav a:nth-child(1) { transition-delay: 0.18s; }
+  body.side-menu-open .side-menu nav a:nth-child(2) { transition-delay: 0.24s; }
+  body.side-menu-open .side-menu nav a:nth-child(3) { transition-delay: 0.30s; }
+  body.side-menu-open .side-menu nav a:nth-child(4) { transition-delay: 0.36s; }
+  body.side-menu-open .side-menu nav a:nth-child(5) { transition-delay: 0.42s; }
+  body.side-menu-open .side-menu nav a:nth-child(6) { transition-delay: 0.48s; }
+  body.side-menu-open .side-menu nav a:nth-child(7) { transition-delay: 0.54s; }
+  .side-menu nav a .num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3em;
+    color: rgba(211,0,0,0.8);
+    font-style: normal;
+    position: relative;
+    top: -8px;
+  }
+  .side-menu nav a:hover { color: var(--red); padding-left: 14px; }
+  .side-menu-foot {
+    margin-top: auto;
+    padding-top: 40px;
+    border-top: 1px solid rgba(211,0,0,0.25);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .side-menu-foot p {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    margin: 0;
+  }
+  .side-menu-foot a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--red);
+    text-decoration: none;
+    margin-top: 6px;
+  }
+  @media (max-width: 600px) {
+    .side-menu { padding: 24px 28px 32px; }
+    .side-menu nav a { font-size: 30px; }
+    .side-menu-head { margin-bottom: 32px; padding-bottom: 24px; }
+    .side-menu-btn { width: 40px; height: 40px; }
+    .side-menu-btn span { left: 9px; right: 9px; }
+    .side-menu-btn span:nth-child(1) { top: 13px; }
+    .side-menu-btn span:nth-child(2) { top: 19px; }
+    .side-menu-btn span:nth-child(3) { top: 25px; }
+    body.side-menu-open .side-menu-btn span:nth-child(1),
+    body.side-menu-open .side-menu-btn span:nth-child(3) { top: 19px; }
+  }
+  body.side-menu-open { overflow: hidden; }
+
+  /* ===== HERO CONTENT ===== */
+  .hero-content {
+    position: relative; z-index: 5;
+    flex: 1; padding: 60px 40px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px; align-items: flex-start;
+  }
+  .left-col { max-width: 320px; }
+  .left-col p {
+    font-size: 1rem; line-height: 1.55;
+    color: var(--text);
+  }
+  .right-col {
+    display: flex; flex-direction: column;
+    align-items: flex-end; text-align: right;
+  }
+  .services-list-small {
+    list-style: none;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .services-list-small li {
+    font-size: 1rem; font-weight: 400;
+    transition: color .2s; cursor: pointer;
+  }
+  .services-list-small li:hover { color: var(--red); }
+
+  .wordmark-wrap {
+    position: relative; z-index: 5;
+    padding: 0 24px 40px;
+    margin-top: auto;
+  }
+  .wordmark {
+    text-align: left;
+    align-items: flex-start;
+    font-weight: 900;
+    font-size: clamp(2rem, 7vw, 7rem);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    color: var(--text);
+    text-shadow: 0 10px 60px rgba(0,0,0,0.6);
+    pointer-events: none; user-select: none;
+    display: flex; flex-direction: column;
+    align-items: flex-start; gap: 0;
+  }
+  .wordmark span { display: block; line-height: 0.88; }
+  .wordmark .word-red { color: var(--red); }
+  .wordmark .word-script {
+    display: inline-block;
+    font-size: 0;
+    line-height: 0;
+  }
+  .wordmark .word-marketing { margin-top: -0.38em; }
+  @media (max-width: 900px) {
+    .wordmark .word-marketing { margin-top: -0.1em; }
+  }
+  .wordmark .word-script img {
+    display: block;
+    width: clamp(10rem, 38vw, 36rem);
+    height: auto;
+    /* Tints the white PNG to the red brand color */
+    filter: brightness(0) saturate(100%) invert(13%) sepia(98%) saturate(7490%) hue-rotate(3deg) brightness(95%) contrast(115%);
+  }
+  .wordmark sup {
+    font-size: 0.18em; vertical-align: top;
+    font-weight: 500; opacity: 0.7;
+    margin-left: 0.05em;
+  }
+
+  /* ===== SERVICES SECTION ===== */
+  .services {
+    background: var(--bg);
+    padding: 140px 40px 40px;
+    position: relative;
+  }
+  .services-head {
+    text-align: center;
+    margin-bottom: 120px;
+  }
+  .tag-label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 0.95rem; font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-bottom: 40px;
+  }
+  .tag-label::before {
+    content: '•'; color: var(--text); font-size: 1rem;
+  }
+  .services-intro {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.2vw, 2rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    max-width: 880px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .services-intro .red { color: var(--red); }
+  /* Hero CTA */
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 24px;
+    padding: 14px 28px; border-radius: 100px;
+    background: var(--text); color: var(--bg);
+    font-size: 0.95rem; font-weight: 600;
+    transition: all .25s; cursor: pointer; text-decoration: none;
+  }
+  .hero-cta:hover {
+    background: var(--red); color: #fff;
+    box-shadow: 0 0 30px var(--red-glow);
+    transform: translateY(-2px);
+  }
+  .hero-cta svg { width: 14px; height: 14px; fill: currentColor; }
+
+  /* ===== CHAMBANA RIDES CINEMATIC AD ===== */
+  .chambana-ad {
+    position: relative;
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+    padding: 100px 24px 0;
+    isolation: isolate;
+  }
+  .chambana-ad .frame {
+    position: relative;
+    width: 100%;
+    max-width: 1500px;
+    margin: 0 auto;
+    aspect-ratio: 16/9;
+    background: #000;
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px var(--line);
+    z-index: 1;
+  }
+  .chambana-ad .letterbox-top,
+  .chambana-ad .letterbox-bot {
+    position: absolute; left: 0; right: 0;
+    height: 50px; background: #000;
+    z-index: 5; pointer-events: none;
+  }
+  .chambana-ad .letterbox-top { top: 0; }
+  .chambana-ad .letterbox-bot { bottom: 0; }
+  .chambana-ad video {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .chambana-ad .vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none; z-index: 3;
+  }
+  .chambana-ad .corner-tag {
+    position: absolute;
+    top: 70px; left: 30px;
+    z-index: 6;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.85);
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .chambana-ad .corner-tag .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #ff3b30;
+    box-shadow: 0 0 12px #ff3b30;
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+  .chambana-ad .credit {
+    position: absolute;
+    bottom: 70px; right: 30px;
+    z-index: 6;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+  .chambana-ad .play-overlay {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 7; cursor: pointer;
+    background: rgba(0,0,0,0.25);
+    transition: opacity .4s ease;
+  }
+  .chambana-ad .play-overlay.hidden { opacity: 0; pointer-events: none; }
+  .chambana-ad .play-btn {
+    width: 92px; height: 92px; border-radius: 50%;
+    background: rgba(255,255,255,0.95);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+    animation: pulseRing 2s ease-out infinite;
+  }
+  .chambana-ad .play-btn svg {
+    width: 32px; height: 32px; fill: #0A2463;
+    margin-left: 5px;
+  }
+  @keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.5); }
+    100% { box-shadow: 0 0 0 30px rgba(255,255,255,0); }
+  }
+  .chambana-ad .caption {
+    position: relative;
+    text-align: center;
+    margin: 60px auto 0;
+    max-width: 900px;
+    padding: 0 24px 100px;
+    color: rgba(255,255,255,0.92);
+    z-index: 2;
+  }
+  .chambana-ad .caption .eyebrow-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    padding: 6px 16px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    background: transparent;
+    margin-bottom: 22px;
+  }
+  .chambana-ad .caption h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: clamp(1.8rem, 3.5vw, 3.2rem);
+    letter-spacing: -0.03em;
+    color: #fff; margin: 0 0 16px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .chambana-ad .caption h3 .accent {
+    color: #fff;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+  }
+  .chambana-ad .caption p {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.02em;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  @media (max-width: 700px) {
+    .chambana-ad { padding: 40px 0; }
+    .chambana-ad .letterbox-top, .chambana-ad .letterbox-bot { height: 28px; }
+    .chambana-ad .corner-tag { top: 40px; left: 16px; font-size: 0.6rem; }
+    .chambana-ad .credit { bottom: 40px; right: 16px; font-size: 0.6rem; }
+    .chambana-ad .play-btn { width: 64px; height: 64px; }
+    .chambana-ad .play-btn svg { width: 22px; height: 22px; }
+  }
+
+  /* ===== LOCATION WORDMARK ===== */
+  .location-mark {
+    background: #000;
+    padding: 60px 40px 40px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .location-mark span {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: clamp(3rem, 13vw, 14rem);
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: #2a2a2a;
+    display: block;
+    white-space: nowrap;
+  }
+  @media (max-width: 700px) {
+    .location-mark { padding: 40px 20px 24px; }
+    .location-mark span { font-size: 14vw; }
+  }
+
+  /* ===== FOOTER ===== */
+  .site-footer {
+    background: #050505;
+    border-top: 1px solid var(--line);
+    padding: 80px 40px 40px;
+    color: rgba(255,255,255,0.85);
+  }
+  .footer-grid {
+    max-width: 1400px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+  .footer-brand img {
+    height: 44px; width: auto; display: block;
+    margin-bottom: 18px;
+  }
+  .footer-brand p {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    max-width: 340px;
+  }
+  .footer-col h4 {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.5);
+    margin: 0 0 18px;
+    font-weight: 600;
+  }
+  .footer-office {
+    margin-bottom: 22px;
+  }
+  .footer-office .place {
+    font-size: 1rem; font-weight: 600;
+    color: #fff; margin-bottom: 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .footer-office .flag { font-size: 1.1rem; }
+  .footer-office a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color .2s;
+  }
+  .footer-office a:hover { color: var(--red); }
+  .footer-bottom {
+    max-width: 1400px; margin: 60px auto 0;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 16px;
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.45);
+  }
+  .footer-bottom .links { display: flex; gap: 24px; }
+  .footer-bottom .links a {
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .footer-bottom .links a:hover { color: #fff; }
+  .powered-by {
+    max-width: 1400px; margin: 18px auto 0;
+    text-align: center;
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .powered-by strong { color: rgba(255,255,255,0.7); font-weight: 600; letter-spacing: 0.1em; }
+  @media (max-width: 800px) {
+    .site-footer { padding: 60px 24px 30px; }
+    .footer-grid { grid-template-columns: 1fr; gap: 40px; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* Proof section */
+  .proof {
+    padding: 100px 40px;
+    border-top: 1px solid var(--line);
+  }
+  .proof-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 60px; max-width: 1100px; margin: 0 auto 80px;
+    text-align: center;
+  }
+  .proof-stat .num {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 500; letter-spacing: -0.02em;
+    color: var(--text); line-height: 1;
+    display: block; margin-bottom: 12px;
+  }
+  .proof-stat .num .red { color: var(--red); }
+  .proof-stat .label {
+    font-size: 0.85rem; color: rgba(255,255,255,0.55);
+    text-transform: uppercase; letter-spacing: 0.12em;
+  }
+  .proof-quote {
+    max-width: 880px; margin: 0 auto;
+    text-align: center;
+  }
+  .proof-quote blockquote {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+    line-height: 1.4; font-weight: 400;
+    color: var(--text); margin: 0 0 32px;
+    letter-spacing: -0.01em;
+  }
+  .proof-quote cite {
+    display: block; font-style: normal;
+    font-size: 0.9rem; color: rgba(255,255,255,0.7);
+    letter-spacing: 0.04em;
+  }
+  .proof-quote cite strong { color: var(--text); font-weight: 600; }
+  @media (max-width: 700px) {
+    .proof { padding: 60px 20px; }
+    .proof-stats { grid-template-columns: 1fr; gap: 40px; margin-bottom: 50px; }
+  }
+
+  /* Accordion list */
+  .services-accordion {
+    list-style: none;
+    max-width: 1400px;
+    margin: 0 auto;
+    border-top: 1px solid var(--line);
+  }
+  .acc-item {
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .acc-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 60px 8px;
+    cursor: pointer;
+    gap: 24px;
+    transition: padding .3s ease;
+  }
+  .acc-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.8rem, 4.5vw, 4rem);
+    line-height: 0.85;
+    letter-spacing: -0.035em;
+    text-transform: uppercase;
+    color: #fff;
+    transition: color .3s ease, transform .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .acc-icon {
+    position: relative;
+    width: 32px; height: 32px;
+    flex-shrink: 0;
+  }
+  .acc-icon::before,
+  .acc-icon::after {
+    content: ''; position: absolute;
+    background: var(--text);
+    top: 50%; left: 50%;
+    transition: transform 1.4s cubic-bezier(.4,0,.2,1), background .3s;
+  }
+  .acc-icon::before {
+    width: 26px; height: 2px;
+    transform: translate(-50%, -50%);
+  }
+  .acc-icon::after {
+    width: 2px; height: 26px;
+    transform: translate(-50%, -50%);
+  }
+  .acc-item.open .acc-icon::before,
+  .acc-item:hover .acc-icon::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+  .acc-item.open .acc-icon::after,
+  .acc-item:hover .acc-icon::after {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .acc-panel {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      max-height 1.4s cubic-bezier(.4,0,.2,1),
+      opacity 1.4s cubic-bezier(.4,0,.2,1);
+  }
+  .acc-item.open .acc-panel,
+  .acc-item:hover .acc-panel {
+    max-height: 1200px;
+    opacity: 1;
+  }
+  .acc-inner {
+    padding: 0 8px 30px;
+    max-width: 1000px;
+    transform: translateY(20px);
+    transition: transform 1.4s cubic-bezier(.4,0,.2,1);
+  }
+  .acc-item.open .acc-inner,
+  .acc-item:hover .acc-inner { transform: translateY(0); }
+  .acc-desc {
+    font-size: clamp(1rem, 1.3vw, 1.2rem);
+    line-height: 1.55;
+    color: var(--text);
+    margin-bottom: 24px;
+    max-width: 720px;
+  }
+  .acc-features {
+    list-style: none;
+    display: flex; flex-wrap: wrap;
+    gap: 16px 48px;
+  }
+  .acc-features li {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-size: 1.05rem; font-weight: 500;
+  }
+  .acc-features li::before {
+    content: '+';
+    color: var(--red);
+    font-size: 1.8rem; font-weight: 400;
+    line-height: 1;
+  }
+
+  /* ===== LOGO STRIP ===== */
+  .logo-strip {
+    overflow: hidden; padding: 60px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .logo-track {
+    display: flex; gap: 80px; white-space: nowrap;
+    animation: scrollLogos 80s linear infinite;
+    align-items: center;
+  }
+  .logo-item {
+    display: inline-flex; align-items: center;
+    flex-shrink: 0;
+    height: 70px;
+    opacity: 0.75;
+    transition: opacity .3s ease;
+  }
+  .logo-item:hover { opacity: 1; }
+  .logo-item img {
+    height: 100%;
+    width: auto;
+    object-fit: contain;
+  }
+  .logo-item-art {
+    height: 90px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .logo-item-art img {
+    height: 100%;
+    width: auto;
+    object-fit: cover;
+  }
+  @keyframes scrollLogos {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ===== WORK WORDMARK ===== */
+  .work-wordmark {
+    padding: 80px 40px 60px;
+    font-weight: 900;
+    font-size: clamp(4rem, 17vw, 16rem);
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    text-align: left;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+
+  /* ===== SCROLL REVEAL ANIMATIONS ===== */
+  /* Default fade-up reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(60px);
+    transition:
+      opacity 1.6s cubic-bezier(.2,.8,.2,1),
+      transform 1.6s cubic-bezier(.2,.8,.2,1);
+    transition-delay: var(--delay, 0s);
+    will-change: opacity, transform;
+  }
+  .reveal.show { opacity: 1; transform: translateY(0); }
+
+  /* Slide from left */
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-80px);
+    transition:
+      opacity 1.4s cubic-bezier(.2,.8,.2,1),
+      transform 1.4s cubic-bezier(.2,.8,.2,1);
+    transition-delay: var(--delay, 0s);
+    will-change: opacity, transform;
+  }
+  .reveal-left.show { opacity: 1; transform: translateX(0); }
+
+  /* Slide from right */
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(80px);
+    transition:
+      opacity 1.4s cubic-bezier(.2,.8,.2,1),
+      transform 1.4s cubic-bezier(.2,.8,.2,1);
+    transition-delay: var(--delay, 0s);
+    will-change: opacity, transform;
+  }
+  .reveal-right.show { opacity: 1; transform: translateX(0); }
+
+  /* Mask wipe for big text */
+  .reveal-mask {
+    overflow: hidden;
+    display: inline-block;
+    padding: 0.05em 0.15em;
+  }
+  .reveal-mask > * {
+    display: inline-block;
+    transform: translateY(110%);
+    transition: transform 1.4s cubic-bezier(.2,.8,.2,1);
+    transition-delay: var(--delay, 0s);
+    will-change: transform;
+  }
+  .reveal-mask.show > * { transform: translateY(0); }
+
+  /* Scale up reveal */
+  .reveal-scale {
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      opacity 1.8s cubic-bezier(.2,.8,.2,1),
+      transform 1.8s cubic-bezier(.2,.8,.2,1);
+    transition-delay: var(--delay, 0s);
+    will-change: opacity, transform;
+  }
+  .reveal-scale.show { opacity: 1; transform: scale(1); }
+
+  /* Parallax hero background */
+  .hero-bg {
+    transform: translateY(var(--parallax, 0));
+    transition: transform .1s linear;
+  }
+
+  /* Language content */
+  [data-lang-en], [data-lang-fr] { display: inline; }
+  body[data-lang="en"] [data-lang-fr],
+  body[data-lang="fr"] [data-lang-en] { display: none; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .navbar {
+      padding: 20px 24px;
+      display: flex;
+      grid-template-columns: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-links { display: none; }
+    .nav-overlay { display: none; }
+    .menu-toggle { display: none !important; }
+    .nav-right { gap: 8px; order: 2; }
+    .btn-contact { display: none; }
+
+    .hero { min-height: auto; }
+    .hero-content { display: none; }
+    .wordmark-wrap { margin-top: 180px; padding: 0 16px 60px; }
+    .wordmark { font-size: 17vw; }
+
+    .services { padding: 70px 20px 20px; }
+    .services-head { margin-bottom: 50px; }
+    .tag-label { margin-bottom: 20px; font-size: 0.85rem; }
+    .services-intro { font-size: clamp(1.2rem, 5vw, 1.8rem); }
+    .acc-head { padding: 22px 2px; gap: 14px; }
+    .acc-title { font-size: clamp(1.1rem, 5.4vw, 1.6rem); }
+    .acc-icon { width: 24px; height: 24px; }
+    .acc-icon::before { width: 20px; height: 2px; }
+    .acc-icon::after { width: 2px; height: 20px; }
+    .acc-inner { padding: 0 2px 32px; }
+    .acc-desc { font-size: 0.95rem; margin-bottom: 28px; }
+    .acc-features { gap: 14px 28px; }
+    .acc-features li { font-size: 0.9rem; gap: 10px; }
+    .acc-features li::before { font-size: 1.4rem; }
+    .work-wordmark { padding: 60px 24px 40px; font-size: 16vw; overflow: hidden; word-break: break-word; }
+    .logo-strip { padding: 36px 0; }
+    .logo-track { gap: 50px; }
+    .logo-item { height: 44px; max-width: 120px; }
+    .logo-item img { max-width: 100%; }
+  }
+  @media (max-width: 540px) {
+    .wordmark { font-size: 15vw; }
+    .work-wordmark { font-size: 14vw; }
+    .navbar { padding: 18px 18px; }
+    .services { padding: 60px 18px 10px; }
+    .acc-head { padding: 20px 0; }
+    .acc-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+    }
+    .acc-features li { font-size: 0.85rem; }
+  }
+  /* ===== WORK SUBTITLE ===== */
+  .work-subtitle {
+    text-align: center;
+    padding: 10px 24px 40px;
+    margin-top: -40px;
+  }
+  .work-subtitle img {
+    max-width: clamp(260px, 40vw, 640px);
+    width: 100%;
+    height: auto;
+    display: inline-block;
+  }
+  @media (max-width: 700px) {
+    .work-subtitle { padding: 0 16px 24px; margin-top: -10px; }
+  }
+
+  /* ===== GALLERY ===== */
+  .gallery {
+    padding: 40px 40px 120px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 180px;
+    gap: 16px;
+  }
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #111;
+    cursor: pointer;
+  }
+  .gallery-item img,
+  .gallery-item video {
+    width: 120%; height: 120%;
+    object-fit: cover;
+    display: block;
+    position: absolute; top: -10%; left: -10%;
+    transition: filter .5s ease, transform .8s cubic-bezier(.2,.8,.2,1);
+    will-change: transform;
+  }
+  .gi-1 img, .gi-1 video { animation: drift1 14s ease-in-out infinite alternate; }
+  .gi-2 img, .gi-2 video { animation: drift2 16s ease-in-out infinite alternate; }
+  .gi-3 img, .gi-3 video { animation: drift3 13s ease-in-out infinite alternate; }
+  .gi-4 img, .gi-4 video { animation: drift4 17s ease-in-out infinite alternate; }
+  .gi-5 img, .gi-5 video { animation: drift5 15s ease-in-out infinite alternate; }
+  .gallery-item:hover img,
+  .gallery-item:hover video {
+    animation-play-state: paused;
+    transform: scale(1.1);
+    filter: brightness(1.1);
+  }
+  @keyframes drift1 { from { transform: translate(-4%, 3%) scale(1.02); } to { transform: translate(4%, -3%) scale(1.05); } }
+  @keyframes drift2 { from { transform: translate(3%, -3%) scale(1.02); } to { transform: translate(-4%, 4%) scale(1.05); } }
+  @keyframes drift3 { from { transform: translate(-3%, -3%) scale(1.02); } to { transform: translate(4%, 4%) scale(1.05); } }
+  @keyframes drift4 { from { transform: translate(4%, 3%) scale(1.02); } to { transform: translate(-3%, -4%) scale(1.05); } }
+  @keyframes drift5 { from { transform: translate(-3%, 4%) scale(1.02); } to { transform: translate(4%, -2%) scale(1.05); } }
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-item img, .gallery-item video { animation: none !important; }
+  }
+  .gallery-item::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.45));
+    opacity: 0; transition: opacity .4s ease;
+    pointer-events: none;
+  }
+  .gallery-item:hover::after { opacity: 1; }
+  .gi-1 { grid-column: span 3; grid-row: span 2; }
+  .gi-2 { grid-column: span 3; grid-row: span 2; }
+  .gi-3 { grid-column: span 2; grid-row: span 2; }
+  .gi-4 { grid-column: span 2; grid-row: span 2; }
+  .gi-5 { grid-column: span 2; grid-row: span 2; }
+  .gi-6 { grid-column: span 3; grid-row: span 2; }
+  .gi-7 { grid-column: span 3; grid-row: span 2; }
+  .gi-8 { grid-column: span 6; grid-row: span 2; }
+  .gi-1 video { object-position: center 30%; }
+  .gi-8 img { object-position: center 25%; }
+  @media (max-width: 900px) {
+    .gi-1 video { object-position: center center; }
+    .gi-8 img { object-position: center center; }
+  }
+  @media (max-width: 900px) {
+    .gallery { padding: 20px 16px 80px; }
+    .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: 220px;
+      gap: 10px;
+    }
+    .gi-1, .gi-2, .gi-3, .gi-4, .gi-5, .gi-6, .gi-7, .gi-8 {
+      grid-column: span 2; grid-row: span 1;
+    }
+    .gi-1, .gi-8 { grid-row: span 2; }
+  }
+
+  /* ===== GET TO WORK ===== */
+  .getwork {
+    padding: 80px 40px 140px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+  .getwork-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: clamp(3.5rem, 13vw, 14rem);
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    margin: 0 0 24px;
+  }
+  .getwork-title .red { color: var(--red); }
+  .getwork-sub {
+    font-size: clamp(1.05rem, 1.6vw, 1.4rem);
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.01em;
+    margin: 0 0 60px;
+    max-width: 780px;
+  }
+  @media (max-width: 700px) { .getwork-sub { margin-bottom: 36px; } }
+  .hover-grid {
+    display: grid;
+    grid-template: 1fr / 1fr 1fr 1fr;
+    gap: 16px;
+    aspect-ratio: 16 / 7;
+    transition: grid-template 400ms cubic-bezier(.2,.8,.2,1) 140ms;
+  }
+  .hover-grid:has(:hover) { transition: grid-template 400ms cubic-bezier(.2,.8,.2,1); }
+  .hover-grid:has(> :nth-child(1):hover) { grid-template: 1fr / 2fr 1fr 1fr; }
+  .hover-grid:has(> :nth-child(2):hover) { grid-template: 1fr / 1fr 2fr 1fr; }
+  .hover-grid:has(> :nth-child(3):hover) { grid-template: 1fr / 1fr 1fr 2fr; }
+  .hover-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #1a1a1a;
+    cursor: pointer;
+  }
+  .hover-item img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: filter 400ms ease;
+  }
+  .hover-item::before {
+    content: '';
+    position: absolute; inset: 0;
+    z-index: 1;
+    mix-blend-mode: multiply;
+    transition: opacity 400ms ease;
+    pointer-events: none;
+  }
+  .hover-item:nth-child(1)::before { background: #8a2be2; }
+  .hover-item:nth-child(2)::before { background: transparent; }
+  .hover-item:nth-child(3)::before { background: #8a2be2; }
+  .hover-caption .sub {
+    display: block;
+    font-size: 0.85rem; font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    margin-top: 6px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+  .hover-item:hover::before { opacity: 0; }
+  .hover-item:hover img { filter: brightness(1.05); }
+  .hover-item::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.75));
+    pointer-events: none;
+  }
+  .hover-caption {
+    position: absolute; inset: 0;
+    z-index: 1;
+    color: #fff;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .hover-caption h3 {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.2rem, 1.8vw, 1.8rem);
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .hover-caption .arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 250ms ease 200ms, transform 250ms ease 200ms;
+  }
+  .hover-item:hover .arrow { opacity: 1; transform: translateX(0); }
+  .hover-caption .arrow svg { width: 20px; height: auto; fill: currentColor; }
+  @media (max-width: 900px) {
+    .getwork { padding: 50px 18px 80px; }
+    .hover-grid {
+      grid-template: repeat(3, 1fr) / 1fr !important;
+      aspect-ratio: auto;
+      gap: 12px;
+    }
+    .hover-item { aspect-ratio: 16 / 10; }
+  }
+</style>
+</head>
+<body data-lang="en">
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-slide hero-slide-1"><video src="./hero-3.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture></video></div>
+    <div class="hero-slide hero-slide-2"><img src="./gallery-6.png" alt=""></div>
+    <div class="hero-slide hero-slide-3"><img src="./hero.png" alt=""></div>
+  </div>
+  <div class="hero-overlay"></div>
+
+  <header class="navbar">
+    <a href="#" class="logo"><img src="./logo-main.png" alt="Logic"></a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#"><span data-lang-en>Home</span><span data-lang-fr>Accueil</span></a></li>
+      <li><a href="#"><span data-lang-en>About</span><span data-lang-fr>À propos</span></a></li>
+      <li><a href="#services"><span data-lang-en>Services</span><span data-lang-fr>Services</span></a></li>
+      <li><a href="#"><span data-lang-en>Projects</span><span data-lang-fr>Projets</span></a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="lang-toggle" id="langToggle">
+        <button data-set-lang="en" class="active">EN</button>
+        <button data-set-lang="fr">FR</button>
+      </div>
+      <a href="#contact-form" class="btn-contact"><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
+      <button class="side-menu-btn" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false" onclick="toggleSideMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="side-menu-backdrop" onclick="toggleSideMenu(false)"></div>
+  <aside class="side-menu" id="sideMenu" aria-hidden="true">
+    <div class="side-menu-head">
+      <div class="eyebrow">Menu</div>
+      <button class="side-menu-close" aria-label="Close menu" onclick="toggleSideMenu(false)">×</button>
+    </div>
+    <nav>
+      <a href="#" onclick="toggleSideMenu(false)"><span class="num">01</span><span data-lang-en>Home</span><span data-lang-fr>Accueil</span></a>
+      <a href="#services" onclick="toggleSideMenu(false)"><span class="num">02</span><span data-lang-en>Services</span><span data-lang-fr>Services</span></a>
+      <a href="#work" onclick="toggleSideMenu(false)"><span class="num">03</span><span data-lang-en>Work</span><span data-lang-fr>Projets</span></a>
+      <a href="#about" onclick="toggleSideMenu(false)"><span class="num">04</span><span data-lang-en>About</span><span data-lang-fr>À propos</span></a>
+      <a href="#process" onclick="toggleSideMenu(false)"><span class="num">05</span><span data-lang-en>Process</span><span data-lang-fr>Processus</span></a>
+      <a href="#contact-form" onclick="toggleSideMenu(false)"><span class="num">06</span><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
+    </nav>
+    <div class="side-menu-foot">
+      <p>Chicago · Worldwide</p>
+      <p>Logic Marketing® 2026</p>
+      <a href="mailto:hello@logicmarketing.co">hello@logicmarketing.co</a>
+    </div>
+  </aside>
+
+  <div class="hero-content">
+    <div class="left-col reveal-left">
+      <p>
+        <span data-lang-en>We partner with bold brands to craft marketing that drives conversion and commands attention.</span>
+        <span data-lang-fr>Nous collaborons avec des marques audacieuses pour créer un marketing qui génère des conversions et capte l'attention.</span>
+      </p>
+      <a href="#contact-form" class="hero-cta">
+        <span data-lang-en>Start a project</span><span data-lang-fr>Démarrer un projet</span>
+        <svg viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
+      </a>
+    </div>
+    <div class="right-col reveal-right">
+      <ul class="services-list-small">
+        <li><span data-lang-en>Brand Identity</span><span data-lang-fr>Identité de marque</span></li>
+        <li><span data-lang-en>Performance Ads</span><span data-lang-fr>Publicités performance</span></li>
+        <li><span data-lang-en>Social Strategy</span><span data-lang-fr>Stratégie sociale</span></li>
+        <li><span data-lang-en>Web &amp; Product</span><span data-lang-fr>Web &amp; Produit</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="wordmark-wrap">
+    <h1 class="wordmark">
+      <span class="reveal-mask"><span class="word-script"><img src="./logo-main.png" alt="LOGIC"></span></span>
+      <span class="reveal-mask word-marketing" style="--delay:.25s"><span>MARKETING</span></span>
+    </h1>
+  </div>
+</section>
+
+<!-- ===== SERVICES SECTION ===== -->
+<section class="services" id="services">
+  <div class="services-head"></div>
+
+  <ul class="services-accordion">
+    <li class="acc-item reveal">
+      <div class="acc-head">
+        <div class="acc-title">SOCIAL MEDIA MANAGEMENT</div>
+        <div class="acc-icon"></div>
+      </div>
+      <div class="acc-panel"><div class="acc-inner">
+        <p class="acc-desc">
+          <span data-lang-en>Strategy, content, and growth across every platform that matters.</span>
+          <span data-lang-fr>Stratégie, contenu et croissance sur chaque plateforme qui compte.</span>
+        </p>
+        <ul class="acc-features">
+          <li><span data-lang-en>Content strategy</span><span data-lang-fr>Stratégie de contenu</span></li>
+          <li><span data-lang-en>Post &amp; Reel creation</span><span data-lang-fr>Posts &amp; Reels</span></li>
+          <li><span data-lang-en>Community management</span><span data-lang-fr>Gestion de communauté</span></li>
+          <li><span data-lang-en>Influencer outreach</span><span data-lang-fr>Partenariats créateurs</span></li>
+          <li><span data-lang-en>Marketing videos</span><span data-lang-fr>Vidéos marketing</span></li>
+          <li><span data-lang-en>Short educational videos</span><span data-lang-fr>Vidéos éducatives courtes</span></li>
+          <li><span data-lang-en>Analytics &amp; reporting</span><span data-lang-fr>Analytique &amp; rapports</span></li>
+        </ul>
+      </div></div>
+    </li>
+
+    <li class="acc-item reveal">
+      <div class="acc-head">
+        <div class="acc-title">BRAND IDENTITY</div>
+        <div class="acc-icon"></div>
+      </div>
+      <div class="acc-panel"><div class="acc-inner">
+        <p class="acc-desc">
+          <span data-lang-en>Our Brand Identity service helps you build a distinctive, memorable, and cohesive presence that resonates with your target audience.</span>
+          <span data-lang-fr>Notre service d'identité de marque vous aide à bâtir une présence distinctive, mémorable et cohérente qui résonne avec votre audience cible.</span>
+        </p>
+        <ul class="acc-features">
+          <li><span data-lang-en>Logo design</span><span data-lang-fr>Design de logo</span></li>
+          <li><span data-lang-en>Typography &amp; color systems</span><span data-lang-fr>Typographie &amp; couleurs</span></li>
+          <li><span data-lang-en>Brand guidelines</span><span data-lang-fr>Charte graphique</span></li>
+          <li><span data-lang-en>Art Direction</span><span data-lang-fr>Direction artistique</span></li>
+        </ul>
+      </div></div>
+    </li>
+
+    <li class="acc-item reveal">
+      <div class="acc-head">
+        <div class="acc-title">UI/UX DESIGN</div>
+        <div class="acc-icon"></div>
+      </div>
+      <div class="acc-panel"><div class="acc-inner">
+        <p class="acc-desc">
+          <span data-lang-en>Our UI/UX design service focuses on creating intuitive, visually engaging, and user-centered digital experiences that drive results.</span>
+          <span data-lang-fr>Notre service UI/UX se concentre sur la création d'expériences numériques intuitives, visuellement engageantes et centrées utilisateur qui génèrent des résultats.</span>
+        </p>
+        <ul class="acc-features">
+          <li><span data-lang-en>Visual design &amp; layout</span><span data-lang-fr>Design visuel &amp; mise en page</span></li>
+          <li><span data-lang-en>Prototyping</span><span data-lang-fr>Prototypage</span></li>
+          <li><span data-lang-en>User flow design</span><span data-lang-fr>Design des parcours</span></li>
+          <li><span data-lang-en>Design systems</span><span data-lang-fr>Systèmes de design</span></li>
+        </ul>
+      </div></div>
+    </li>
+
+    <li class="acc-item reveal">
+      <div class="acc-head">
+        <div class="acc-title">DEVELOPMENT</div>
+        <div class="acc-icon"></div>
+      </div>
+      <div class="acc-panel"><div class="acc-inner">
+        <p class="acc-desc">
+          <span data-lang-en>Our development services are designed to help businesses transform ideas into high-quality digital solutions.</span>
+          <span data-lang-fr>Nos services de développement sont conçus pour aider les entreprises à transformer leurs idées en solutions numériques de haute qualité.</span>
+        </p>
+        <ul class="acc-features">
+          <li><span data-lang-en>Custom website design</span><span data-lang-fr>Sites web sur mesure</span></li>
+          <li><span data-lang-en>Landing page development</span><span data-lang-fr>Développement de landing pages</span></li>
+          <li><span data-lang-en>API development</span><span data-lang-fr>Développement d'API</span></li>
+          <li><span data-lang-en>Custom CMS solutions</span><span data-lang-fr>Solutions CMS sur mesure</span></li>
+          <li><span data-lang-en>Software development</span><span data-lang-fr>Développement logiciel</span></li>
+        </ul>
+      </div></div>
+    </li>
+
+    <li class="acc-item reveal">
+      <div class="acc-head">
+        <div class="acc-title">PRODUCT DESIGN</div>
+        <div class="acc-icon"></div>
+      </div>
+      <div class="acc-panel"><div class="acc-inner">
+        <p class="acc-desc">
+          <span data-lang-en>Our product design service helps transform your ideas into intuitive, market-ready solutions that balance aesthetics, functionality, and user experience.</span>
+          <span data-lang-fr>Notre service de design produit transforme vos idées en solutions intuitives prêtes pour le marché, équilibrant esthétique, fonctionnalité et expérience utilisateur.</span>
+        </p>
+        <ul class="acc-features">
+          <li><span data-lang-en>User Research</span><span data-lang-fr>Recherche utilisateur</span></li>
+          <li><span data-lang-en>Product Strategy</span><span data-lang-fr>Stratégie produit</span></li>
+          <li><span data-lang-en>Journey Mapping</span><span data-lang-fr>Cartographie des parcours</span></li>
+          <li><span data-lang-en>Concept Validation</span><span data-lang-fr>Validation de concept</span></li>
+        </ul>
+      </div></div>
+    </li>
+  </ul>
+</section>
+
+<!-- ===== PROOF / RESULTS ===== -->
+<section class="proof" id="proof">
+  <div class="proof-stats">
+    <div class="proof-stat reveal">
+      <span class="num"><span class="red">3.4×</span></span>
+      <span class="label" data-lang-en>Avg. conversion lift</span>
+      <span class="label" data-lang-fr style="display:none">Hausse moyenne de conversion</span>
+    </div>
+    <div class="proof-stat reveal" style="--delay:.1s">
+      <span class="num">40+</span>
+      <span class="label" data-lang-en>Brands launched</span>
+      <span class="label" data-lang-fr style="display:none">Marques lancées</span>
+    </div>
+    <div class="proof-stat reveal" style="--delay:.2s">
+      <span class="num">12<span class="red">w</span></span>
+      <span class="label" data-lang-en>Avg. time to ship</span>
+      <span class="label" data-lang-fr style="display:none">Délai moyen de livraison</span>
+    </div>
+  </div>
+  <div class="proof-quote reveal" style="--delay:.3s">
+    <blockquote>
+      <span data-lang-en>"Logic rebuilt our brand from the ground up and shipped a site that paid for itself in the first quarter. Easily the most strategic partner we've worked with."</span>
+      <span data-lang-fr>"Logic a reconstruit notre marque de zéro et livré un site qui s'est rentabilisé dès le premier trimestre. De loin le partenaire le plus stratégique avec qui nous avons travaillé."</span>
+    </blockquote>
+    <cite>
+      <strong>— Jordan Lee</strong>, <span data-lang-en>Founder, Brand</span><span data-lang-fr>Fondateur, Marque</span>
+    </cite>
+  </div>
+</section>
+
+<!-- ===== LOGO STRIP ===== -->
+<div class="logo-strip">
+  <div class="logo-track">
+    <div class="logo-item"><img src="./client-puzzle-m2.png" alt="Puzzle M2"></div>
+    <div class="logo-item"><img src="./client-p2.png" alt="P2"></div>
+    <div class="logo-item"><img src="./logo-main.png" alt="Logic"></div>
+    <div class="logo-item"><img src="./client-logic-l.png" alt="Logic L"></div>
+    <div class="logo-item logo-item-art"><img src="./client-logic-art.png" alt="Logic Art"></div>
+    <div class="logo-item"><img src="./client-puzzle-m2.png" alt="Puzzle M2"></div>
+    <div class="logo-item"><img src="./client-p2.png" alt="P2"></div>
+    <div class="logo-item"><img src="./logo-main.png" alt="Logic"></div>
+    <div class="logo-item"><img src="./client-logic-l.png" alt="Logic L"></div>
+    <div class="logo-item logo-item-art"><img src="./client-logic-art.png" alt="Logic Art"></div>
+    <div class="logo-item"><img src="./client-puzzle-m2.png" alt="Puzzle M2"></div>
+    <div class="logo-item"><img src="./client-p2.png" alt="P2"></div>
+    <div class="logo-item"><img src="./logo-main.png" alt="Logic"></div>
+    <div class="logo-item"><img src="./client-logic-l.png" alt="Logic L"></div>
+    <div class="logo-item logo-item-art"><img src="./client-logic-art.png" alt="Logic Art"></div>
+    <!-- duplicate for seamless loop -->
+    <div class="logo-item"><img src="./client-puzzle-m2.png" alt="Puzzle M2"></div>
+    <div class="logo-item"><img src="./client-p2.png" alt="P2"></div>
+    <div class="logo-item"><img src="./logo-main.png" alt="Logic"></div>
+    <div class="logo-item"><img src="./client-logic-l.png" alt="Logic L"></div>
+    <div class="logo-item logo-item-art"><img src="./client-logic-art.png" alt="Logic Art"></div>
+    <div class="logo-item"><img src="./client-puzzle-m2.png" alt="Puzzle M2"></div>
+    <div class="logo-item"><img src="./client-p2.png" alt="P2"></div>
+    <div class="logo-item"><img src="./logo-main.png" alt="Logic"></div>
+    <div class="logo-item"><img src="./client-logic-l.png" alt="Logic L"></div>
+    <div class="logo-item logo-item-art"><img src="./client-logic-art.png" alt="Logic Art"></div>
+    <div class="logo-item"><img src="./client-puzzle-m2.png" alt="Puzzle M2"></div>
+    <div class="logo-item"><img src="./client-p2.png" alt="P2"></div>
+    <div class="logo-item"><img src="./logo-main.png" alt="Logic"></div>
+    <div class="logo-item"><img src="./client-logic-l.png" alt="Logic L"></div>
+    <div class="logo-item logo-item-art"><img src="./client-logic-art.png" alt="Logic Art"></div>
+  </div>
+</div>
+
+<!-- ===== WORK WORDMARK ===== -->
+<div class="work-wordmark">
+  <span class="reveal-mask"><span data-lang-en>WORK</span><span data-lang-fr>PROJETS</span></span>
+</div>
+<!-- ===== GALLERY ===== -->
+<section class="gallery" id="gallery">
+  <div class="gallery-grid">
+    <div class="gallery-item gi-1 reveal">
+      <video src="./gallery-1.mp4" autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture></video>
+    </div>
+    <div class="gallery-item gi-2 reveal" style="--delay:.1s">
+      <img src="./gallery-2.png" alt="" loading="lazy">
+    </div>
+    <div class="gallery-item gi-3 reveal" style="--delay:.15s">
+      <img src="./gallery-3.png" alt="" loading="lazy">
+    </div>
+    <div class="gallery-item gi-4 reveal" style="--delay:.2s">
+      <img src="./gallery-4.png" alt="" loading="lazy">
+    </div>
+    <div class="gallery-item gi-5 reveal" style="--delay:.25s">
+      <img src="./gallery-5.png" alt="" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<!-- ===== GET TO WORK ===== -->
+<section class="getwork" id="getwork">
+  <h2 class="getwork-title reveal">
+    <span data-lang-en>Let's get to <span class="red">work</span>.</span>
+    <span data-lang-fr>Mettons-nous au <span class="red">travail</span>.</span>
+  </h2>
+  <p class="getwork-sub reveal" style="--delay:.15s">
+    <span data-lang-en>Pick a lane. We'll handle the rest.</span>
+    <span data-lang-fr>Choisissez une voie. On s'occupe du reste.</span>
+  </p>
+  <div class="hover-grid">
+    <a href="#services" class="hover-item">
+      <img src="./brand-identity.png" alt="" loading="lazy">
+      <div class="hover-caption">
+        <h3><span data-lang-en>Brand Identity</span><span data-lang-fr>Identité de marque</span></h3>
+        <span class="arrow">
+          <span data-lang-en>Discover</span><span data-lang-fr>Découvrir</span>
+          <svg viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
+        </span>
+      </div>
+    </a>
+    <a href="#services" class="hover-item">
+      <img src="./performance-ads.png" alt="" loading="lazy">
+      <div class="hover-caption">
+        <h3>
+          <span data-lang-en>Performance Ads</span><span data-lang-fr>Publicité performance</span>
+          <span class="sub"><span data-lang-en>Improve your presence on social media</span><span data-lang-fr>Améliorez votre présence sur les réseaux sociaux</span></span>
+        </h3>
+        <span class="arrow">
+          <span data-lang-en>Discover</span><span data-lang-fr>Découvrir</span>
+          <svg viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
+        </span>
+      </div>
+    </a>
+    <a href="#services" class="hover-item">
+      <img src="./gallery-2.png" alt="" loading="lazy">
+      <div class="hover-caption">
+        <h3><span data-lang-en>Content Creation</span><span data-lang-fr>Création de contenu</span></h3>
+        <span class="arrow">
+          <span data-lang-en>Discover</span><span data-lang-fr>Découvrir</span>
+          <svg viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
+        </span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ===== CHAMBANA RIDES CINEMATIC AD ===== -->
+<section class="chambana-ad" id="chambana-ad">
+  <div class="frame">
+    <video id="chambanaVideo" src="./Chambanarides PUB.MP4" preload="metadata" playsinline></video>
+    <div class="letterbox-top"></div>
+    <div class="letterbox-bot"></div>
+    <div class="vignette"></div>
+    <div class="corner-tag"><span class="dot"></span>
+      <span data-lang-en>Featured Campaign</span><span data-lang-fr>Campagne en vedette</span>
+    </div>
+    <div class="credit">
+      <span data-lang-en>Logic × Chambana Rides</span><span data-lang-fr>Logic × Chambana Rides</span>
+    </div>
+    <div class="play-overlay" id="chambanaPlay">
+      <div class="play-btn">
+        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="caption">
+    <h3>
+      <span data-lang-en>Chambana Rides — <span class="accent">Brand Spot</span></span>
+      <span data-lang-fr>Chambana Rides — <span class="accent">Spot publicitaire</span></span>
+    </h3>
+    <p>
+      <span data-lang-en>Directed, edited and produced by Logic Marketing. A cinematic 30-second spot built to launch Chambana Rides into a new market.</span>
+      <span data-lang-fr>Réalisé, monté et produit par Logic Marketing. Un spot cinématique de 30 secondes conçu pour lancer Chambana Rides sur un nouveau marché.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ===== LOCATION WORDMARK ===== -->
+<div class="location-mark">
+  <span>Illinois USA</span>
+</div>
+
+<!-- ===== CONTACT FORM ===== -->
+<style>
+  .contact-section {
+    padding: 100px 40px;
+    background: #0d0d0d;
+    color: #fff;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .contact-wrap {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px;
+    align-items: start;
+  }
+  .contact-intro .eyebrow {
+    color: #d30000; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 18px;
+  }
+  .contact-intro h2 {
+    font-family: 'Fraunces', 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 500; letter-spacing: -0.02em; line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .contact-intro p {
+    color: rgba(255,255,255,0.65); line-height: 1.7;
+    font-size: 15px; max-width: 380px;
+  }
+  .contact-form { display: grid; gap: 18px; }
+  .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .cf-field label {
+    display: block; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.55); margin-bottom: 8px;
+  }
+  .cf-field input, .cf-field textarea, .cf-field select {
+    width: 100%; padding: 14px 0;
+    background: transparent; border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-family: inherit; font-size: 15px;
+    transition: border-color .2s;
+  }
+  .cf-field select option { background: #0d0d0d; color: #fff; }
+  .cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus {
+    outline: none; border-bottom-color: #d30000;
+  }
+  .cf-field textarea { resize: vertical; min-height: 80px; }
+  .cf-submit {
+    background: #d30000; color: #fff; border: none;
+    padding: 16px 32px; font-family: inherit;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; border-radius: 4px;
+    transition: background .15s, transform .15s;
+    justify-self: start;
+  }
+  .cf-submit:hover { background: #a80000; transform: translateY(-1px); }
+  .cf-msg {
+    color: #16a34a; font-size: 14px; min-height: 20px; font-weight: 500;
+  }
+  @media (max-width: 820px) {
+    .contact-wrap { grid-template-columns: 1fr; gap: 40px; }
+    .cf-row { grid-template-columns: 1fr; }
+  }
+</style>
+<section class="contact-section" id="contact-form">
+  <div class="contact-wrap">
+    <div class="contact-intro">
+      <div class="eyebrow">
+        <span data-lang-en>Get in touch</span><span data-lang-fr>Contactez-nous</span>
+      </div>
+      <h2>
+        <span data-lang-en>Let's build something worth talking about.</span>
+        <span data-lang-fr>Construisons quelque chose qui fait parler.</span>
+      </h2>
+      <p>
+        <span data-lang-en>Tell us about your project. We'll reply within one business day.</span>
+        <span data-lang-fr>Parlez-nous de votre projet. Nous répondons sous un jour ouvré.</span>
+      </p>
+    </div>
+    <form class="contact-form" id="lmContactForm" autocomplete="off">
+      <div class="cf-row">
+        <div class="cf-field">
+          <label><span data-lang-en>Full name</span><span data-lang-fr>Nom complet</span></label>
+          <input id="lmName" type="text" required/>
+        </div>
+        <div class="cf-field">
+          <label><span data-lang-en>Email</span><span data-lang-fr>Email</span></label>
+          <input id="lmEmail" type="email" required/>
+        </div>
+      </div>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label><span data-lang-en>Company</span><span data-lang-fr>Entreprise</span></label>
+          <input id="lmCompany" type="text"/>
+        </div>
+        <div class="cf-field">
+          <label><span data-lang-en>Service</span><span data-lang-fr>Service</span></label>
+          <select id="lmService">
+            <option>Branding</option>
+            <option>Web Design</option>
+            <option>Performance Ads</option>
+            <option>Video Production</option>
+            <option>Photography</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="cf-field">
+        <label><span data-lang-en>Tell us about your project</span><span data-lang-fr>Parlez-nous de votre projet</span></label>
+        <textarea id="lmMessage" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="cf-submit">
+        <span data-lang-en>Send message</span><span data-lang-fr>Envoyer</span>
+      </button>
+      <div class="cf-msg" id="lmMsg"></div>
+    </form>
+  </div>
+</section>
+<script>
+  (function(){
+    const form = document.getElementById('lmContactForm');
+    if (!form) return;
+    form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      const name = document.getElementById('lmName').value.trim();
+      const email = document.getElementById('lmEmail').value.trim();
+      const company = document.getElementById('lmCompany').value.trim();
+      const service = document.getElementById('lmService').value;
+      const message = document.getElementById('lmMessage').value.trim();
+      if (!name || !email || !message) return;
+      let geo = {};
+      try { geo = JSON.parse(localStorage.getItem('lm_geo') || '{}') || {}; } catch(_) {}
+      const payload = {
+        name, email, company, service, message,
+        source: 'Contact form — index.html',
+        page: window.location.pathname.split('/').pop() || 'index.html',
+        referrer: document.referrer || 'direct',
+        city: geo.city || '', country: geo.country || '', flag: geo.flag || '',
+        language: navigator.language || ''
+      };
+      const msg = document.getElementById('lmMsg');
+      try {
+        const r = await fetch('/api/inbox', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!r.ok) throw new Error('api');
+      } catch (_) {
+        // Offline fallback to localStorage so messages aren't lost
+        let inbox = [];
+        try { inbox = JSON.parse(localStorage.getItem('lm_inbox') || '[]'); } catch(_) {}
+        inbox.unshift({ id: Date.now(), from: name, email, company, service, message,
+          subject: service + (company ? ' — ' + company : ''), body: message,
+          ts: Date.now(), read: false, ...payload });
+        localStorage.setItem('lm_inbox', JSON.stringify(inbox));
+      }
+      form.reset();
+      msg.textContent = (document.documentElement.lang === 'fr' ? 'Message envoyé. Nous reviendrons vers vous rapidement.' : 'Message sent. We\'ll be in touch shortly.');
+      setTimeout(() => { msg.textContent = ''; }, 6000);
+    });
+  })();
+</script>
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer" id="contact">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <img src="./logo-main.png" alt="Logic Marketing">
+      <p>
+        <span data-lang-en>Marketing studio for ambitious brands. Branding, performance, and content — built end to end.</span>
+        <span data-lang-fr>Studio marketing pour les marques ambitieuses. Branding, performance et contenu — de bout en bout.</span>
+      </p>
+    </div>
+
+    <div class="footer-col">
+      <h4><span data-lang-en>Offices</span><span data-lang-fr>Bureaux</span></h4>
+      <div class="footer-office">
+        <div class="place"><span class="flag">🇺🇸</span> Illinois, USA</div>
+        <a href="tel:+14474108995">+1 447 410 8995</a>
+      </div>
+      <div class="footer-office">
+        <div class="place"><span class="flag">🇨🇩</span> DRC</div>
+        <a href="tel:+243800897629">+243 800 897 629</a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4><span data-lang-en>Navigate</span><span data-lang-fr>Navigation</span></h4>
+      <div class="footer-office">
+        <a href="#services" style="display:block;margin-bottom:8px"><span data-lang-en>Services</span><span data-lang-fr>Services</span></a>
+        <a href="#gallery" style="display:block;margin-bottom:8px"><span data-lang-en>Work</span><span data-lang-fr>Projets</span></a>
+        <a href="#proof" style="display:block;margin-bottom:8px"><span data-lang-en>Results</span><span data-lang-fr>Résultats</span></a>
+        <a href="#chambana-ad" style="display:block"><span data-lang-en>Case Study</span><span data-lang-fr>Étude de cas</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 Logic Marketing. <span data-lang-en>All rights reserved.</span><span data-lang-fr>Tous droits réservés.</span></span>
+    <div class="links">
+      <a href="./privacy.html"><span data-lang-en>Privacy</span><span data-lang-fr>Confidentialité</span></a>
+      <a href="./terms.html"><span data-lang-en>Terms</span><span data-lang-fr>Conditions</span></a>
+    </div>
+  </div>
+  <div class="powered-by">
+    <span data-lang-en>Powered by</span><span data-lang-fr>Propulsé par</span> <strong>Puzzle Business Group LLC</strong>
+  </div>
+</footer>
+
+<!-- ===== VISITOR TRACKING (real IP + geolocation) ===== -->
+<script>
+  (async function lmTracker(){
+    try {
+      const VISITS = 'lm_visits', CLICKS = 'lm_clicks', SESSION = 'lm_session', GEO_CACHE = 'lm_geo';
+      const SESSION_TTL = 30 * 60 * 1000; // 30 min
+      const GEO_TTL = 24 * 60 * 60 * 1000; // 24h cache for geo lookup
+      const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) || f; } catch { return f; } };
+      const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+      // 1. Resolve IP + geo (cached for 24h to avoid hammering the API)
+      let geo = load(GEO_CACHE, null);
+      if (!geo || (Date.now() - geo._fetchedAt) > GEO_TTL) {
+        try {
+          const r = await fetch('https://ipwho.is/');
+          const d = await r.json();
+          if (d && d.success !== false) {
+            geo = {
+              ip: d.ip,
+              city: d.city || '—',
+              region: d.region || '',
+              country: d.country || '—',
+              country_code: d.country_code || '',
+              flag: (d.flag && d.flag.emoji) || '',
+              latitude: d.latitude, longitude: d.longitude,
+              isp: (d.connection && d.connection.isp) || '',
+              _fetchedAt: Date.now()
+            };
+            save(GEO_CACHE, geo);
+          }
+        } catch(_) { /* offline / blocked → still record visit without geo */ }
+      }
+      geo = geo || { ip: 'unknown', city: '—', country: '—', country_code: '', flag: '' };
+
+      // 2. Session: new only if last activity > 30 min ago
+      const sess = load(SESSION, null);
+      const now = Date.now();
+      const isNewSession = !sess || (now - sess.lastSeen) > SESSION_TTL;
+      const sessionId = isNewSession ? 'sess_' + now + '_' + Math.random().toString(36).slice(2,8) : sess.id;
+      save(SESSION, { id: sessionId, lastSeen: now });
+
+      // 3. Push pageview to backend (and keep a local copy as offline cache)
+      const visit = {
+        ts: now, sessionId, newSession: isNewSession,
+        city: geo.city, region: geo.region, country: geo.country,
+        country_code: geo.country_code, flag: geo.flag,
+        page: window.location.pathname.split('/').pop() || 'index.html',
+        path: window.location.pathname,
+        referrer: document.referrer || 'direct',
+        ua: navigator.userAgent.slice(0, 160),
+        lang: navigator.language || '',
+        screen: screen.width + 'x' + screen.height
+      };
+      fetch('/api/track/visit', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(visit) }).catch(()=>{});
+      const visits = load(VISITS, []);
+      visits.push({ ...visit, ip: geo.ip });
+      if (visits.length > 5000) visits.splice(0, visits.length - 5000);
+      save(VISITS, visits);
+
+      // 4. Track clicks on links / buttons / nav items
+      document.addEventListener('click', (e) => {
+        const t = e.target.closest('a, button');
+        if (!t) return;
+        const click = {
+          ts: Date.now(), sessionId,
+          page: window.location.pathname.split('/').pop() || 'index.html',
+          target: (t.textContent || t.getAttribute('aria-label') || t.getAttribute('href') || t.tagName).trim().slice(0, 80),
+          href: t.getAttribute('href') || ''
+        };
+        fetch('/api/track/click', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(click) }).catch(()=>{});
+        const clicks = load(CLICKS, []);
+        clicks.push({
+          ts: Date.now(),
+          sessionId,
+          ip: geo.ip,
+          page: window.location.pathname.split('/').pop() || 'index.html',
+          target: (t.textContent || t.getAttribute('aria-label') || t.getAttribute('href') || t.tagName).trim().slice(0, 80),
+          href: t.getAttribute('href') || ''
+        });
+        if (clicks.length > 10000) clicks.splice(0, clicks.length - 10000);
+        save(CLICKS, clicks);
+      }, { passive: true });
+
+      // 5. Update lastSeen periodically while page is open
+      setInterval(() => save(SESSION, { id: sessionId, lastSeen: Date.now() }), 60000);
+    } catch(err) { console.warn('lm tracker error', err); }
+  })();
+</script>
+
+<script>
+  // Slow native wheel — divides each wheel tick so the page travels less.
+  // No interpolation, no queue, no lag. Pure native scroll, just shorter steps.
+  (function(){
+    // Only intervene on real mouse wheels, not trackpads (trackpads handle inertia natively).
+    let isTrackpad = false;
+    const detect = (e) => {
+      // Trackpad events have small deltaY (often <50) and deltaMode 0
+      if (Math.abs(e.deltaY) < 50 && e.deltaMode === 0) isTrackpad = true;
+      window.removeEventListener('wheel', detect);
+    };
+    window.addEventListener('wheel', detect, { passive: true, once: true });
+
+    window.addEventListener('wheel', (e) => {
+      if (isTrackpad) return;
+      e.preventDefault();
+      // Non-linear: small flick → tiny move, hard flick → big move.
+      const d = e.deltaY;
+      const accelerated = Math.sign(d) * Math.pow(Math.abs(d) / 100, 1.7) * 100;
+      window.scrollBy({ top: accelerated, left: 0, behavior: 'auto' });
+    }, { passive: false });
+  })();
+
+  (function(){
+    const v = document.getElementById('chambanaVideo');
+    const p = document.getElementById('chambanaPlay');
+    if (!v || !p) return;
+    p.addEventListener('click', () => {
+      v.play();
+      p.classList.add('hidden');
+      v.setAttribute('controls', '');
+    });
+    v.addEventListener('pause', () => { if (!v.ended) p.classList.remove('hidden'); });
+    v.addEventListener('ended', () => p.classList.remove('hidden'));
+  })();
+</script>
+
+<script>
+  // Force-play autoplay videos on mobile (iOS Low Power Mode etc.)
+  (function() {
+    const videos = document.querySelectorAll('video[autoplay]');
+    const tryPlay = () => videos.forEach(v => {
+      v.muted = true;
+      const p = v.play();
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    });
+    tryPlay();
+    window.addEventListener('load', tryPlay);
+    document.addEventListener('touchstart', tryPlay, { once: true, passive: true });
+    document.addEventListener('click', tryPlay, { once: true });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) tryPlay();
+    });
+  })();
+
+  // Side menu (Puzzle Mining style)
+  function toggleSideMenu(force) {
+    const body = document.body;
+    const isOpen = body.classList.contains('side-menu-open');
+    const next = typeof force === 'boolean' ? force : !isOpen;
+    body.classList.toggle('side-menu-open', next);
+    const btn = document.querySelector('.side-menu-btn');
+    const aside = document.getElementById('sideMenu');
+    if (btn) btn.setAttribute('aria-expanded', next ? 'true' : 'false');
+    if (aside) aside.setAttribute('aria-hidden', next ? 'false' : 'true');
+  }
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.body.classList.contains('side-menu-open')) toggleSideMenu(false);
+  });
+
+  // Language toggle
+  const langToggle = document.getElementById('langToggle');
+  langToggle.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const lang = btn.getAttribute('data-set-lang');
+    document.body.setAttribute('data-lang', lang);
+    langToggle.querySelectorAll('button').forEach(b =>
+      b.classList.toggle('active', b === btn)
+    );
+    document.documentElement.setAttribute('lang', lang);
+  });
+
+  // ===== SCROLL REVEAL ANIMATIONS =====
+  const revealSelectors = '.reveal, .reveal-left, .reveal-right, .reveal-mask, .reveal-scale';
+
+  // Stagger accordion rows so they cascade in as you scroll
+  document.querySelectorAll('.services-accordion > li').forEach((el, i) => {
+    el.style.setProperty('--delay', (i * 0.06) + 's');
+  });
+
+  // Accordion toggle — click a row to expand, closes siblings
+  document.querySelectorAll('.acc-item').forEach(item => {
+    const head = item.querySelector('.acc-head');
+    head.addEventListener('click', () => {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.acc-item.open').forEach(o => o.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  // Stagger the small services list in the hero
+  document.querySelectorAll('.services-list-small li').forEach((el, i) => {
+    el.style.setProperty('--delay', (0.2 + i * 0.1) + 's');
+  });
+
+  // Reveal observer — triggers once when 15% of the element is on screen
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('show');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -80px 0px' });
+
+  document.querySelectorAll(revealSelectors).forEach(el => io.observe(el));
+
+  // Reveal hero elements right away on load (they're above the fold)
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.hero ' + revealSelectors.split(',').join(', .hero '))
+      .forEach(el => el.classList.add('show'));
+  });
+
+  // ===== PARALLAX on hero background =====
+  const heroBg = document.querySelector('.hero-bg');
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (heroBg && y < window.innerHeight * 1.2) {
+          heroBg.style.setProperty('--parallax', (y * 0.35) + 'px');
+        }
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+</script>
+</body>
+</html>

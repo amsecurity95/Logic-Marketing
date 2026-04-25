@@ -1231,7 +1231,7 @@
         <button data-set-lang="en" class="active">EN</button>
         <button data-set-lang="fr">FR</button>
       </div>
-      <a href="#contact" class="btn-contact"><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
+      <a href="#contact-form" class="btn-contact"><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
       <button class="side-menu-btn" aria-label="Open menu" aria-controls="sideMenu" aria-expanded="false" onclick="toggleSideMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -1250,7 +1250,7 @@
       <a href="#work" onclick="toggleSideMenu(false)"><span class="num">03</span><span data-lang-en>Work</span><span data-lang-fr>Projets</span></a>
       <a href="#about" onclick="toggleSideMenu(false)"><span class="num">04</span><span data-lang-en>About</span><span data-lang-fr>À propos</span></a>
       <a href="#process" onclick="toggleSideMenu(false)"><span class="num">05</span><span data-lang-en>Process</span><span data-lang-fr>Processus</span></a>
-      <a href="#contact" onclick="toggleSideMenu(false)"><span class="num">06</span><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
+      <a href="#contact-form" onclick="toggleSideMenu(false)"><span class="num">06</span><span data-lang-en>Contact</span><span data-lang-fr>Contact</span></a>
     </nav>
     <div class="side-menu-foot">
       <p>Chicago · Worldwide</p>
@@ -1265,7 +1265,7 @@
         <span data-lang-en>We partner with bold brands to craft marketing that drives conversion and commands attention.</span>
         <span data-lang-fr>Nous collaborons avec des marques audacieuses pour créer un marketing qui génère des conversions et capte l'attention.</span>
       </p>
-      <a href="#contact" class="hero-cta">
+      <a href="#contact-form" class="hero-cta">
         <span data-lang-en>Start a project</span><span data-lang-fr>Démarrer un projet</span>
         <svg viewBox="0 0 448 512"><path d="M190.5 66.9l22.2-22.2c9.4-9.4 24.6-9.4 33.9 0L441 239c9.4 9.4 9.4 24.6 0 33.9L246.6 467.3c-9.4 9.4-24.6 9.4-33.9 0l-22.2-22.2c-9.5-9.5-9.3-25 .4-34.3L311.4 296H24c-13.3 0-24-10.7-24-24v-32c0-13.3 10.7-24 24-24h287.4L190.9 101.2c-9.8-9.3-10-24.8-.4-34.3z"/></svg>
       </a>
@@ -1569,6 +1569,168 @@
   <span>Illinois USA</span>
 </div>
 
+<!-- ===== CONTACT FORM ===== -->
+<style>
+  .contact-section {
+    padding: 100px 40px;
+    background: #0d0d0d;
+    color: #fff;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .contact-wrap {
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px;
+    align-items: start;
+  }
+  .contact-intro .eyebrow {
+    color: #d30000; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 18px;
+  }
+  .contact-intro h2 {
+    font-family: 'Fraunces', 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 500; letter-spacing: -0.02em; line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .contact-intro p {
+    color: rgba(255,255,255,0.65); line-height: 1.7;
+    font-size: 15px; max-width: 380px;
+  }
+  .contact-form { display: grid; gap: 18px; }
+  .cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .cf-field label {
+    display: block; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.55); margin-bottom: 8px;
+  }
+  .cf-field input, .cf-field textarea, .cf-field select {
+    width: 100%; padding: 14px 0;
+    background: transparent; border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    color: #fff; font-family: inherit; font-size: 15px;
+    transition: border-color .2s;
+  }
+  .cf-field select option { background: #0d0d0d; color: #fff; }
+  .cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus {
+    outline: none; border-bottom-color: #d30000;
+  }
+  .cf-field textarea { resize: vertical; min-height: 80px; }
+  .cf-submit {
+    background: #d30000; color: #fff; border: none;
+    padding: 16px 32px; font-family: inherit;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; border-radius: 4px;
+    transition: background .15s, transform .15s;
+    justify-self: start;
+  }
+  .cf-submit:hover { background: #a80000; transform: translateY(-1px); }
+  .cf-msg {
+    color: #16a34a; font-size: 14px; min-height: 20px; font-weight: 500;
+  }
+  @media (max-width: 820px) {
+    .contact-wrap { grid-template-columns: 1fr; gap: 40px; }
+    .cf-row { grid-template-columns: 1fr; }
+  }
+</style>
+<section class="contact-section" id="contact-form">
+  <div class="contact-wrap">
+    <div class="contact-intro">
+      <div class="eyebrow">
+        <span data-lang-en>Get in touch</span><span data-lang-fr>Contactez-nous</span>
+      </div>
+      <h2>
+        <span data-lang-en>Let's build something worth talking about.</span>
+        <span data-lang-fr>Construisons quelque chose qui fait parler.</span>
+      </h2>
+      <p>
+        <span data-lang-en>Tell us about your project. We'll reply within one business day.</span>
+        <span data-lang-fr>Parlez-nous de votre projet. Nous répondons sous un jour ouvré.</span>
+      </p>
+    </div>
+    <form class="contact-form" id="lmContactForm" autocomplete="off">
+      <div class="cf-row">
+        <div class="cf-field">
+          <label><span data-lang-en>Full name</span><span data-lang-fr>Nom complet</span></label>
+          <input id="lmName" type="text" required/>
+        </div>
+        <div class="cf-field">
+          <label><span data-lang-en>Email</span><span data-lang-fr>Email</span></label>
+          <input id="lmEmail" type="email" required/>
+        </div>
+      </div>
+      <div class="cf-row">
+        <div class="cf-field">
+          <label><span data-lang-en>Company</span><span data-lang-fr>Entreprise</span></label>
+          <input id="lmCompany" type="text"/>
+        </div>
+        <div class="cf-field">
+          <label><span data-lang-en>Service</span><span data-lang-fr>Service</span></label>
+          <select id="lmService">
+            <option>Branding</option>
+            <option>Web Design</option>
+            <option>Performance Ads</option>
+            <option>Video Production</option>
+            <option>Photography</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="cf-field">
+        <label><span data-lang-en>Tell us about your project</span><span data-lang-fr>Parlez-nous de votre projet</span></label>
+        <textarea id="lmMessage" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="cf-submit">
+        <span data-lang-en>Send message</span><span data-lang-fr>Envoyer</span>
+      </button>
+      <div class="cf-msg" id="lmMsg"></div>
+    </form>
+  </div>
+</section>
+<script>
+  (function(){
+    const form = document.getElementById('lmContactForm');
+    if (!form) return;
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('lmName').value.trim();
+      const email = document.getElementById('lmEmail').value.trim();
+      const company = document.getElementById('lmCompany').value.trim();
+      const service = document.getElementById('lmService').value;
+      const message = document.getElementById('lmMessage').value.trim();
+      if (!name || !email || !message) return;
+      let inbox = [];
+      try { inbox = JSON.parse(localStorage.getItem('lm_inbox') || '[]'); } catch(_) {}
+      let geo = {};
+      try { geo = JSON.parse(localStorage.getItem('lm_geo') || '{}') || {}; } catch(_) {}
+      inbox.unshift({
+        id: Date.now(),
+        from: name,
+        email,
+        company,
+        service,
+        message,
+        subject: service + (company ? ' — ' + company : ''),
+        body: message,
+        source: 'Contact form — index.html',
+        page: window.location.pathname.split('/').pop() || 'index.html',
+        referrer: document.referrer || 'direct',
+        ip: geo.ip || '',
+        city: geo.city || '',
+        country: geo.country || '',
+        flag: geo.flag || '',
+        lang: navigator.language || '',
+        read: false,
+        ts: Date.now()
+      });
+      localStorage.setItem('lm_inbox', JSON.stringify(inbox));
+      form.reset();
+      const msg = document.getElementById('lmMsg');
+      msg.textContent = (document.documentElement.lang === 'fr' ? 'Message envoyé. Nous reviendrons vers vous rapidement.' : 'Message sent. We\'ll be in touch shortly.');
+      setTimeout(() => { msg.textContent = ''; }, 6000);
+    });
+  })();
+</script>
+
 <!-- ===== FOOTER ===== -->
 <footer class="site-footer" id="contact">
   <div class="footer-grid">
@@ -1614,6 +1776,93 @@
     <span data-lang-en>Powered by</span><span data-lang-fr>Propulsé par</span> <strong>Puzzle Business Group LLC</strong>
   </div>
 </footer>
+
+<!-- ===== VISITOR TRACKING (real IP + geolocation) ===== -->
+<script>
+  (async function lmTracker(){
+    try {
+      const VISITS = 'lm_visits', CLICKS = 'lm_clicks', SESSION = 'lm_session', GEO_CACHE = 'lm_geo';
+      const SESSION_TTL = 30 * 60 * 1000; // 30 min
+      const GEO_TTL = 24 * 60 * 60 * 1000; // 24h cache for geo lookup
+      const load = (k, f) => { try { return JSON.parse(localStorage.getItem(k)) || f; } catch { return f; } };
+      const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+      // 1. Resolve IP + geo (cached for 24h to avoid hammering the API)
+      let geo = load(GEO_CACHE, null);
+      if (!geo || (Date.now() - geo._fetchedAt) > GEO_TTL) {
+        try {
+          const r = await fetch('https://ipwho.is/');
+          const d = await r.json();
+          if (d && d.success !== false) {
+            geo = {
+              ip: d.ip,
+              city: d.city || '—',
+              region: d.region || '',
+              country: d.country || '—',
+              country_code: d.country_code || '',
+              flag: (d.flag && d.flag.emoji) || '',
+              latitude: d.latitude, longitude: d.longitude,
+              isp: (d.connection && d.connection.isp) || '',
+              _fetchedAt: Date.now()
+            };
+            save(GEO_CACHE, geo);
+          }
+        } catch(_) { /* offline / blocked → still record visit without geo */ }
+      }
+      geo = geo || { ip: 'unknown', city: '—', country: '—', country_code: '', flag: '' };
+
+      // 2. Session: new only if last activity > 30 min ago
+      const sess = load(SESSION, null);
+      const now = Date.now();
+      const isNewSession = !sess || (now - sess.lastSeen) > SESSION_TTL;
+      const sessionId = isNewSession ? 'sess_' + now + '_' + Math.random().toString(36).slice(2,8) : sess.id;
+      save(SESSION, { id: sessionId, lastSeen: now });
+
+      // 3. Push pageview
+      const visits = load(VISITS, []);
+      visits.push({
+        ts: now,
+        sessionId,
+        newSession: isNewSession,
+        ip: geo.ip,
+        city: geo.city,
+        region: geo.region,
+        country: geo.country,
+        country_code: geo.country_code,
+        flag: geo.flag,
+        page: window.location.pathname.split('/').pop() || 'index.html',
+        path: window.location.pathname,
+        referrer: document.referrer || 'direct',
+        ua: navigator.userAgent.slice(0, 160),
+        lang: (navigator.language || ''),
+        screen: screen.width + 'x' + screen.height
+      });
+      // Cap at 5000 entries to keep localStorage healthy
+      if (visits.length > 5000) visits.splice(0, visits.length - 5000);
+      save(VISITS, visits);
+
+      // 4. Track clicks on links / buttons / nav items
+      document.addEventListener('click', (e) => {
+        const t = e.target.closest('a, button');
+        if (!t) return;
+        const clicks = load(CLICKS, []);
+        clicks.push({
+          ts: Date.now(),
+          sessionId,
+          ip: geo.ip,
+          page: window.location.pathname.split('/').pop() || 'index.html',
+          target: (t.textContent || t.getAttribute('aria-label') || t.getAttribute('href') || t.tagName).trim().slice(0, 80),
+          href: t.getAttribute('href') || ''
+        });
+        if (clicks.length > 10000) clicks.splice(0, clicks.length - 10000);
+        save(CLICKS, clicks);
+      }, { passive: true });
+
+      // 5. Update lastSeen periodically while page is open
+      setInterval(() => save(SESSION, { id: sessionId, lastSeen: Date.now() }), 60000);
+    } catch(err) { console.warn('lm tracker error', err); }
+  })();
+</script>
 
 <script>
   // Slow native wheel — divides each wheel tick so the page travels less.

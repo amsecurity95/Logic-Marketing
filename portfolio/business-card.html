@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Logic Marketing — Mr Yada Business Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,400;9..144,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d0d0d;
+    --text:#ffffff;
+    --muted:rgba(255,255,255,0.65);
+    --line:rgba(255,255,255,0.18);
+    --red:#d30000;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  html,body{background:#222;font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
+
+  /* Business card: 3.5in x 2in (US standard) */
+  @page { size: 3.5in 2in; margin: 0; }
+
+  .card{
+    width:3.5in; height:2in;
+    position:relative;
+    overflow:hidden;
+    page-break-after:always;
+    color:var(--text);
+    background:var(--bg);
+  }
+  .card:last-child{page-break-after:auto;}
+
+  /* ==== FRONT ==== */
+  .front{
+    display:flex;align-items:center;justify-content:center;
+  }
+  .front .redbar{position:absolute;top:0;left:0;width:100%;height:3px;background:var(--red);}
+  .front .corner-tl{position:absolute;top:12px;left:14px;font-size:6px;letter-spacing:0.3em;color:var(--muted);text-transform:uppercase;font-weight:600;}
+  .front .corner-br{position:absolute;bottom:12px;right:14px;font-size:6px;letter-spacing:0.3em;color:var(--muted);text-transform:uppercase;font-weight:600;}
+
+  /* Compass art faint */
+  .front .art{
+    position:absolute;right:-40px;top:50%;transform:translateY(-50%);
+    width:180px;height:180px;opacity:0.95;
+  }
+
+  .wordmark{
+    position:relative;z-index:2;
+    font-weight:900;letter-spacing:-0.045em;text-transform:uppercase;
+    line-height:0.85;
+    font-size:54px;
+    padding-left:14px;
+    margin-right:auto;
+  }
+  .wordmark .dot{color:var(--red);font-family:'Fraunces',serif;font-style:italic;font-weight:400;}
+  .wordmark small{
+    display:block;
+    font-family:'Inter',sans-serif;font-weight:500;
+    font-size:8px;letter-spacing:0.42em;
+    margin-top:6px;color:var(--muted);
+  }
+
+  /* ==== BACK ==== */
+  .back{
+    padding:14px 16px 12px;
+    display:flex;flex-direction:column;
+  }
+  .back .redbar{position:absolute;top:0;left:0;width:30%;height:3px;background:var(--red);}
+  .back .brand{
+    font-size:7px;letter-spacing:0.35em;text-transform:uppercase;font-weight:700;color:var(--muted);
+  }
+  .back .brand b{color:var(--text);}
+
+  .name{
+    margin-top:8px;
+    font-weight:900;letter-spacing:-0.03em;text-transform:uppercase;
+    font-size:22px;line-height:0.95;
+  }
+  .role{
+    margin-top:3px;
+    font-family:'Fraunces',serif;font-style:italic;font-weight:400;
+    font-size:10px;color:var(--red);letter-spacing:-0.01em;
+  }
+
+  .divider{height:1px;background:var(--line);margin:9px 0 7px;width:100%;}
+
+  .contact{
+    display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;
+    font-size:7.2px;line-height:1.45;
+  }
+  .contact .item{display:flex;flex-direction:column;}
+  .contact .lab{font-size:5.5px;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:1px;}
+  .contact .val{font-size:7.8px;font-weight:500;color:var(--text);letter-spacing:0.01em;}
+
+  .back .foot{
+    margin-top:auto;
+    display:flex;justify-content:space-between;align-items:center;
+    font-size:5.5px;letter-spacing:0.3em;text-transform:uppercase;color:var(--muted);font-weight:600;
+    padding-top:6px;border-top:1px solid var(--line);
+  }
+  .back .foot .web{color:var(--text);font-weight:700;}
+
+  /* ==== LIGHT VERSION ==== */
+  .card.light{
+    background:#f7f5f1;color:#0d0d0d;
+  }
+  .card.light .corner-tl,
+  .card.light .corner-br{color:rgba(13,13,13,0.6);}
+  .card.light .wordmark small{color:rgba(13,13,13,0.55);}
+  .card.light .brand{color:rgba(13,13,13,0.6);}
+  .card.light .brand b{color:#0d0d0d;}
+  .card.light .contact .lab{color:rgba(13,13,13,0.55);}
+  .card.light .contact .val{color:#0d0d0d;}
+  .card.light .divider{background:rgba(13,13,13,0.15);}
+  .card.light.back .foot,
+  .card.light .foot{color:#0d0d0d;border-top-color:rgba(13,13,13,0.2);font-weight:700;}
+  .card.light.back .foot .web,
+  .card.light .foot .web{color:#0d0d0d !important;font-weight:800 !important;}
+  .card.light .art .ring{stroke:rgba(13,13,13,0.15);}
+  .card.light .art .ring-bright{stroke:rgba(13,13,13,0.3);}
+  .card.light .art .ring-red{stroke:var(--red);}
+
+  /* screen preview only */
+  body{padding:30px;display:flex;flex-direction:column;align-items:center;gap:20px;}
+  .card{box-shadow:0 18px 40px rgba(0,0,0,0.5);border-radius:8px;}
+  @media print{
+    body{padding:0;gap:0;background:transparent;}
+    .card{box-shadow:none;border-radius:0;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============= DARK FRONT ============= -->
+<div class="card front">
+  <div class="redbar"></div>
+  <span class="corner-tl">Est. 26</span>
+  <span class="corner-br">Illinois · Kinshasa</span>
+
+  <svg class="art" viewBox="-100 -100 200 200">
+    <circle class="ring" r="90" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+    <circle class="ring" r="70" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.8"/>
+    <circle class="ring ring-bright" r="50" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="0.8"/>
+    <circle class="ring ring-red" r="30" fill="none" stroke="#d30000" stroke-width="1.1"/>
+    <circle r="3.5" fill="#d30000" cx="50" cy="-50"/>
+    <line x1="-90" y1="0" x2="90" y2="0" stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>
+    <line x1="0" y1="-90" x2="0" y2="90" stroke="rgba(255,255,255,0.06)" stroke-width="0.8"/>
+  </svg>
+
+  <div class="wordmark">
+    Logic<span class="dot">.</span>
+    <small>Marketing Studio</small>
+  </div>
+</div>
+
+<!-- ============= DARK BACK ============= -->
+<div class="card back">
+  <div class="redbar"></div>
+  <div class="brand"><b>LOGIC</b> · MARKETING</div>
+
+  <div class="name">Mr. Yadah</div>
+  <div class="role">Sales Manager — DRC</div>
+
+  <div class="divider"></div>
+
+  <div class="contact">
+    <div class="item">
+      <span class="lab">Office — US</span>
+      <span class="val">+1 447 410 8995</span>
+    </div>
+    <div class="item">
+      <span class="lab">Mobile — DRC</span>
+      <span class="val">+243 800 897 629</span>
+    </div>
+    <div class="item">
+      <span class="lab">Direct</span>
+      <span class="val">mryadah@logicmarketing.co</span>
+    </div>
+    <div class="item">
+      <span class="lab">Studio</span>
+      <span class="val">info@logicmarketing.co</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Illinois · Kinshasa</span>
+    <span class="web">logicmarketing.co</span>
+  </div>
+</div>
+
+<!-- ============= LIGHT FRONT ============= -->
+<div class="card front light">
+  <div class="redbar"></div>
+  <span class="corner-tl">Est. 26</span>
+  <span class="corner-br">Illinois · Kinshasa</span>
+
+  <svg class="art" viewBox="-100 -100 200 200">
+    <circle class="ring" r="90" fill="none" stroke-width="0.8"/>
+    <circle class="ring" r="70" fill="none" stroke-width="0.8"/>
+    <circle class="ring ring-bright" r="50" fill="none" stroke-width="0.8"/>
+    <circle class="ring ring-red" r="30" fill="none" stroke-width="1.1"/>
+    <circle r="3.5" fill="#d30000" cx="50" cy="-50"/>
+  </svg>
+
+  <div class="wordmark">
+    Logic<span class="dot">.</span>
+    <small>Marketing Studio</small>
+  </div>
+</div>
+
+<!-- ============= LIGHT BACK ============= -->
+<div class="card back light">
+  <div class="redbar"></div>
+  <div class="brand"><b>LOGIC</b> · MARKETING</div>
+
+  <div class="name">Mr. Yadah</div>
+  <div class="role">Sales Manager — DRC</div>
+
+  <div class="divider"></div>
+
+  <div class="contact">
+    <div class="item">
+      <span class="lab">Office — US</span>
+      <span class="val">+1 447 410 8995</span>
+    </div>
+    <div class="item">
+      <span class="lab">Mobile — DRC</span>
+      <span class="val">+243 800 897 629</span>
+    </div>
+    <div class="item">
+      <span class="lab">Direct</span>
+      <span class="val">mryadah@logicmarketing.co</span>
+    </div>
+    <div class="item">
+      <span class="lab">Studio</span>
+      <span class="val">info@logicmarketing.co</span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span>Illinois · Kinshasa</span>
+    <span class="web">logicmarketing.co</span>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+# =============================================================
+# Logic Marketing — Hostinger / Apache config
+# =============================================================
+#
+# 1. Protects admin.html and login.html behind HTTP Basic Auth so the
+#    client-side login can never be bypassed by visiting the URL directly.
+#
+# 2. Adds security headers: HSTS, X-Frame-Options, X-Content-Type-Options,
+#    Referrer-Policy, Permissions-Policy, and a Content Security Policy.
+#
+# To activate the HTTP Basic Auth gate:
+#   1. Generate a hashed password file (run on Hostinger SSH or any shell):
+#        htpasswd -c /home/USERNAME/.htpasswd-logic teamuser
+#      (replace USERNAME with your Hostinger username, choose any user)
+#   2. Set the AuthUserFile path below to match.
+#   3. Save and upload this .htaccess to the public_html root.
+#
+# Each team member should be added with:
+#        htpasswd /home/USERNAME/.htpasswd-logic anothername
+#
+# (htpasswd is preinstalled on Hostinger Linux. Hash format is bcrypt -B.)
+# =============================================================
+
+# ---- Security headers ----
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+    # Content Security Policy — adjust if you add new third-party sources
+    Header always set Content-Security-Policy "default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self' https://ipwho.is; frame-ancestors 'self'; base-uri 'self'; form-action 'self' mailto:"
+</IfModule>
+
+# ---- HTTPS redirect ----
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# ---- Block direct access to dotfiles ----
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ---- Protect admin.html and login.html with HTTP Basic Auth ----
+# IMPORTANT: edit the AuthUserFile path to your real .htpasswd location.
+<FilesMatch "^(admin|login)\.html$">
+    AuthType Basic
+    AuthName "Logic Marketing — Internal"
+    AuthUserFile "/home/REPLACE_USERNAME/.htpasswd-logic"
+    Require valid-user
+</FilesMatch>
+
+# ---- Disable directory listing ----
+Options -Indexes
+
+# ---- Disable server signature ----
+ServerSignature Off

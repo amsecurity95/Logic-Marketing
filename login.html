@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Logic Marketing — Internal Login</title>
+<link rel="icon" type="image/png" href="./favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #d30000;
+    --red-dark: #a80000;
+    --bg: #f4f5f7;
+    --ink: #0d0d0d;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .shell {
+    width: 100%; max-width: 1100px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: grid; grid-template-columns: 1.1fr 1fr;
+    min-height: 600px;
+  }
+  .visual {
+    background: linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%);
+    color: #fff;
+    padding: 56px 48px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .visual::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 30% 30%, rgba(211,0,0,0.25), transparent 60%);
+  }
+  .visual > * { position: relative; z-index: 1; }
+  .brand-mark {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .brand-mark img { height: 56px; width: auto; display: block; }
+  .v-title {
+    font-size: 38px; font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.02em; margin-bottom: 16px;
+  }
+  .v-sub { color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 380px; }
+  .v-foot {
+    display: flex; gap: 24px;
+    color: rgba(255,255,255,0.5); font-size: 12px;
+  }
+  .red-bar { height: 4px; background: var(--red); width: 64px; margin-bottom: 24px; border-radius: 2px; }
+  .form-side {
+    padding: 64px 56px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  h1 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .sub { color: var(--muted); margin-bottom: 32px; font-size: 14px; }
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .field input {
+    width: 100%; padding: 14px 16px;
+    border: 1px solid var(--line); border-radius: 8px;
+    font-family: inherit; font-size: 15px;
+    transition: border-color .2s, box-shadow .2s;
+    background: #fff;
+  }
+  .field input:focus {
+    outline: none; border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(211,0,0,0.12);
+  }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; font-size: 13px;
+  }
+  .row label { display: flex; align-items: center; gap: 8px; color: var(--muted); cursor: pointer; }
+  .row a { color: var(--red); font-weight: 600; text-decoration: none; }
+  .btn {
+    width: 100%; padding: 14px;
+    background: var(--red); color: #fff;
+    border: none; border-radius: 8px;
+    font-family: inherit; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background .15s;
+  }
+  .btn:hover { background: var(--red-dark); }
+  .err { color: var(--red); font-size: 13px; margin-top: 12px; min-height: 18px; }
+  .footer-note {
+    margin-top: 32px; padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--muted);
+    text-align: center;
+  }
+  @media (max-width: 820px) {
+    .shell { grid-template-columns: 1fr; }
+    .visual { padding: 40px 32px; min-height: 200px; }
+    .form-side { padding: 40px 32px; }
+  }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <div class="visual">
+      <div class="brand-mark">
+        <img src="./logo-main.png" alt="Logic Marketing" onerror="this.style.display='none'"/>
+      </div>
+      <div>
+        <div class="red-bar"></div>
+        <div class="v-title">Internal<br/>Control Panel</div>
+        <div class="v-sub">Manage clients, monitor visitor analytics, track equipment inventory, and respond to inbound leads — all in one place.</div>
+      </div>
+      <div class="v-foot">
+        <span>© 2026 Logic Marketing</span>
+        <span>Authorized personnel only</span>
+      </div>
+    </div>
+    <div class="form-side">
+      <h1>Sign in</h1>
+      <p class="sub">Enter your team credentials to access the dashboard.</p>
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" type="email" required autocomplete="username" placeholder="you@logicmarketing.com"/>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" required autocomplete="current-password" placeholder="••••••••"/>
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="remember" checked/> Keep me signed in</label>
+          <a href="#">Forgot password?</a>
+        </div>
+        <button class="btn" type="submit">Sign in</button>
+        <div class="err" id="err"></div>
+      </form>
+      <div class="footer-note">First sign-in creates your Admin account · returning users sign in with their team credentials</div>
+    </div>
+  </div>
+<script>
+  const form = document.getElementById('loginForm');
+  const err = document.getElementById('err');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+    if (!email.includes('@') || password.length < 4) {
+      err.textContent = 'Enter a valid email and password.';
+      return;
+    }
+    let team = [];
+    try { team = JSON.parse(localStorage.getItem('lm_team') || '[]'); } catch(_) {}
+    // Bootstrap: first sign-in becomes Admin (creates the team)
+    if (!team.length) {
+      const newAdmin = {
+        id: Date.now(),
+        name: email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g, c=>c.toUpperCase()),
+        email, password, role: 'Admin', title: 'Founder', phone: '', color: '#d30000', avatar: '',
+        joinedAt: new Date().toISOString().slice(0,10)
+      };
+      team = [newAdmin];
+      localStorage.setItem('lm_team', JSON.stringify(team));
+      localStorage.setItem('lm_user', JSON.stringify({ id: newAdmin.id, name: newAdmin.name, email: newAdmin.email, role: newAdmin.role, title: newAdmin.title, color: newAdmin.color, avatar: newAdmin.avatar, loginAt: Date.now() }));
+      window.location.href = './admin.html';
+      return;
+    }
+    const member = team.find(t => t.email.toLowerCase() === email);
+    if (!member) { err.textContent = 'No team account found for that email.'; return; }
+    if (member.password !== password) { err.textContent = 'Incorrect password.'; return; }
+    localStorage.setItem('lm_user', JSON.stringify({
+      id: member.id, name: member.name, email: member.email, role: member.role, title: member.title,
+      color: member.color, avatar: member.avatar, loginAt: Date.now()
+    }));
+    window.location.href = './admin.html';
+  });
+</script>
+</body>
+</html>
