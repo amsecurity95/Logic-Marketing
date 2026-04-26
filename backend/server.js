@@ -364,15 +364,49 @@ app.post('/api/messages', auth, async (req, res) => {
 // ============================================================
 // TRACKING (PUBLIC — called from website)
 // ============================================================
+// In-memory geo cache (24h TTL) keyed by IP — keeps us under ipwho.is rate limits.
+const geoCache = new Map();
+async function lookupGeo(addr) {
+  if (!addr || addr === '127.0.0.1' || addr.startsWith('10.') || addr.startsWith('192.168.')) return null;
+  const hit = geoCache.get(addr);
+  if (hit && (Date.now() - hit.t) < 24*60*60*1000) return hit.v;
+  try {
+    const r = await fetch(`https://ipwho.is/${encodeURIComponent(addr)}`);
+    const d = await r.json();
+    if (!d || d.success === false) return null;
+    const v = {
+      city: d.city || '', region: d.region || '', country: d.country || '',
+      country_code: d.country_code || '',
+      flag: (d.flag && d.flag.emoji) || ''
+    };
+    geoCache.set(addr, { t: Date.now(), v });
+    return v;
+  } catch { return null; }
+}
+
 app.post('/api/track/visit', async (req, res) => {
   const v = req.body || {};
+  const addr = ip(req);
+  // Prefer server-side geo (reliable). Fall back to client-provided geo.
+  const g = await lookupGeo(addr) || {};
   await pool.query(
     `INSERT INTO visits (session_id, ip, city, region, country, country_code, flag, page, path, referrer, user_agent, language, screen)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-    [v.sessionId, ip(req) || null, v.city || '', v.region || '', v.country || '',
-     v.country_code || '', v.flag || '', v.page || '', v.path || '',
+    [v.sessionId, addr || null,
+     g.city || v.city || '',
+     g.region || v.region || '',
+     g.country || v.country || '',
+     g.country_code || v.country_code || '',
+     g.flag || v.flag || '',
+     v.page || '', v.path || '',
      v.referrer || '', (v.ua || '').slice(0, 300), v.lang || '', v.screen || '']
   );
+  res.json({ ok: true });
+});
+// Wipe all tracking data (admin convenience).
+app.post('/api/track/reset', async (_req, res) => {
+  await pool.query('TRUNCATE visits');
+  await pool.query('TRUNCATE clicks');
   res.json({ ok: true });
 });
 app.post('/api/track/click', async (req, res) => {
