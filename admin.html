@@ -2436,8 +2436,80 @@
     toast({ type: 'info', title: 'Deleted', msg: c?.name || '' });
   }
 
-  /* ===== ANALYTICS (real data) ===== */
-  function renderAnalytics() {
+  /* ===== ANALYTICS (real data from backend) ===== */
+  async function renderAnalytics() {
+    // Try real backend data first; fall back to localStorage on failure
+    try {
+      const res = await fetch('/api/analytics/overview');
+      if (res.ok) { renderAnalyticsFromServer(await res.json()); return; }
+    } catch (_) {}
+    renderAnalyticsLocal();
+  }
+
+  function renderAnalyticsFromServer(d) {
+    // Build a 30-day chart from daily aggregates
+    const host = document.getElementById('aChart');
+    const labelHost = document.getElementById('aChartLabels');
+    const days = 30;
+    const today = new Date(); today.setHours(23,59,59,999);
+    const byDay = {};
+    (d.daily || []).forEach(r => { byDay[new Date(r.day).toDateString()] = r.sessions; });
+    const data = [];
+    for (let i = 0; i < days; i++) {
+      const dt = new Date(today); dt.setDate(today.getDate() - (days-1-i));
+      data.push(byDay[dt.toDateString()] || 0);
+    }
+    const max = Math.max(1, ...data);
+    host.innerHTML = data.map((v,i) => {
+      const dt = new Date(today); dt.setDate(today.getDate() - (days-1-i));
+      return `<div class="bar" style="height:${Math.max(2,(v/max)*100)}%"><span class="tip">${v} session${v===1?'':'s'} · ${dt.toLocaleDateString()}</span></div>`;
+    }).join('');
+    labelHost.innerHTML = data.map((_,i) => {
+      const dt = new Date(today); dt.setDate(today.getDate() - (days-1-i));
+      return `<span>${dt.getDate()}/${dt.getMonth()+1}</span>`;
+    }).join('');
+
+    document.getElementById('aSess').textContent = (d.sessions||0).toLocaleString();
+    document.getElementById('aViews').textContent = (d.pageViews||0).toLocaleString();
+    document.getElementById('aTime').textContent = '—';
+    document.getElementById('aBounce').textContent = '—';
+
+    const geoArr = (d.geo || []);
+    const geoMax = Math.max(1, ...geoArr.map(g => g.n));
+    const geoHost = document.getElementById('geoList');
+    geoHost.innerHTML = geoArr.length ? geoArr.map(g => `
+      <div class="geo-row">
+        <div class="flag">${esc(g.flag || '🌐')}</div>
+        <div class="name">${esc(g.city || '—')}${g.country ? ', ' + esc(g.country) : ''}</div>
+        <div class="geo-bar"><div style="width:${(g.n/geoMax)*100}%"></div></div>
+        <div class="count">${g.n}</div>
+      </div>`).join('')
+      : `<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center">No visits yet.</div>`;
+
+    const pages = d.pages || [];
+    document.getElementById('pagesTable').innerHTML = pages.length
+      ? pages.map(p => `<tr><td><b>${esc(p.page||'index.html')}</b></td><td>${(p.views||0).toLocaleString()}</td><td>${(p.clicks||0).toLocaleString()}</td><td>${p.views ? ((p.clicks/p.views)*100).toFixed(1) : '0'}%</td></tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">No page views yet.</td></tr>';
+
+    const recent = d.recent || [];
+    document.getElementById('recentVisitors').innerHTML = recent.length
+      ? recent.map(v => {
+          let referrerLabel = 'Direct';
+          if (v.referrer && v.referrer !== 'direct') {
+            try { referrerLabel = new URL(v.referrer).hostname; } catch(_) {}
+          }
+          return `<tr>
+            <td><code style="font-size:12px;color:var(--ink)">${esc(v.ip||'—')}</code></td>
+            <td>${esc(v.flag||'')} ${esc(v.city||'—')}${v.country ? ', ' + esc(v.country) : ''}</td>
+            <td><b>${esc(v.page||'index.html')}</b></td>
+            <td style="color:var(--muted)">${esc(referrerLabel)}</td>
+            <td style="color:var(--muted);font-size:12px">${new Date(v.ts).toLocaleString()}</td>
+          </tr>`;
+        }).join('')
+      : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No visitors tracked yet.</td></tr>`;
+  }
+
+  function renderAnalyticsLocal() {
     makeChart(document.getElementById('aChart'), document.getElementById('aChartLabels'), 30);
     const visits = visitsInWindow(30);
     const clicks = load(KEYS.clicks, []).filter(c => c.ts >= Date.now() - 30 * 86400000);

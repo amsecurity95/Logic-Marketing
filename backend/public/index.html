@@ -1836,9 +1836,8 @@
       const sessionId = isNewSession ? 'sess_' + now + '_' + Math.random().toString(36).slice(2,8) : sess.id;
       save(SESSION, { id: sessionId, lastSeen: now });
 
-      // 3. Push pageview
-      const visits = load(VISITS, []);
-      visits.push({
+      // 3. Push pageview (server + localStorage fallback)
+      const visitPayload = {
         ts: now,
         sessionId,
         newSession: isNewSession,
@@ -1854,26 +1853,41 @@
         ua: navigator.userAgent.slice(0, 160),
         lang: (navigator.language || ''),
         screen: screen.width + 'x' + screen.height
-      });
-      // Cap at 5000 entries to keep localStorage healthy
+      };
+      const visits = load(VISITS, []);
+      visits.push(visitPayload);
       if (visits.length > 5000) visits.splice(0, visits.length - 5000);
       save(VISITS, visits);
+      // Send to backend (real cross-visitor tracking)
+      fetch('/api/track/visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(visitPayload),
+        keepalive: true
+      }).catch(() => {});
 
       // 4. Track clicks on links / buttons / nav items
       document.addEventListener('click', (e) => {
         const t = e.target.closest('a, button');
         if (!t) return;
-        const clicks = load(CLICKS, []);
-        clicks.push({
+        const payload = {
           ts: Date.now(),
           sessionId,
           ip: geo.ip,
           page: window.location.pathname.split('/').pop() || 'index.html',
           target: (t.textContent || t.getAttribute('aria-label') || t.getAttribute('href') || t.tagName).trim().slice(0, 80),
           href: t.getAttribute('href') || ''
-        });
+        };
+        const clicks = load(CLICKS, []);
+        clicks.push(payload);
         if (clicks.length > 10000) clicks.splice(0, clicks.length - 10000);
         save(CLICKS, clicks);
+        fetch('/api/track/click', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          keepalive: true
+        }).catch(() => {});
       }, { passive: true });
 
       // 5. Update lastSeen periodically while page is open

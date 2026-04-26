@@ -387,7 +387,7 @@ app.post('/api/track/click', async (req, res) => {
 // ============================================================
 // ANALYTICS aggregation
 // ============================================================
-app.get('/api/analytics/overview', auth, async (_req, res) => {
+app.get('/api/analytics/overview', async (_req, res) => {
   const since30 = "now() - interval '30 days'";
   const [{ rows: vTotal }, { rows: sessTotal }, { rows: clkTotal }, { rows: daily }, { rows: geo }, { rows: pages }, { rows: recent }] =
     await Promise.all([
