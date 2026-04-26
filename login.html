@@ -85,6 +85,15 @@
     outline: none; border-color: var(--red);
     box-shadow: 0 0 0 3px rgba(211,0,0,0.12);
   }
+  .pwd-wrap { position: relative; }
+  .pwd-wrap input { padding-right: 48px; }
+  .pwd-toggle {
+    position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
+    background: transparent; border: none; cursor: pointer;
+    color: var(--muted); padding: 6px 10px; font-size: 12px;
+    font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .pwd-toggle:hover { color: var(--red); }
   .row {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 24px; font-size: 13px;
@@ -139,7 +148,10 @@
         </div>
         <div class="field">
           <label for="password">Password</label>
-          <input id="password" type="password" required autocomplete="current-password" placeholder="••••••••"/>
+          <div class="pwd-wrap">
+            <input id="password" type="password" required autocomplete="current-password" placeholder="••••••••"/>
+            <button type="button" class="pwd-toggle" onclick="(function(b){var i=b.previousElementSibling;var s=i.type==='password';i.type=s?'text':'password';b.textContent=s?'Hide':'Show';})(this)">Show</button>
+          </div>
         </div>
         <div class="row">
           <label><input type="checkbox" id="remember" checked/> Keep me signed in</label>

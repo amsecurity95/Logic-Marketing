@@ -446,6 +446,15 @@
   @media (max-width: 720px) { .sub-grid { grid-template-columns: 1fr; } }
 
   /* ===== MODAL ===== */
+  .pwd-wrap { position: relative; }
+  .pwd-wrap input { padding-right: 56px; width: 100%; box-sizing: border-box; }
+  .pwd-toggle {
+    position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+    background: transparent; border: none; cursor: pointer;
+    color: var(--muted); padding: 6px 10px; font-size: 11px;
+    font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .pwd-toggle:hover { color: var(--red); }
   .modal-bg {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.5); z-index: 100;
@@ -1407,10 +1416,10 @@
             <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Change password</h3>
             <form id="pwdForm">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:600px">
-                <div><label>Current password</label><input id="pwdCurrent" type="password"/></div>
+                <div><label>Current password</label><div class="pwd-wrap"><input id="pwdCurrent" type="password"/><button type="button" class="pwd-toggle" onclick="togglePwd(this)">Show</button></div></div>
                 <div></div>
-                <div><label>New password</label><input id="pwdNew" type="password" placeholder="At least 4 characters"/></div>
-                <div><label>Confirm new password</label><input id="pwdConfirm" type="password"/></div>
+                <div><label>New password</label><div class="pwd-wrap"><input id="pwdNew" type="password" placeholder="At least 4 characters"/><button type="button" class="pwd-toggle" onclick="togglePwd(this)">Show</button></div></div>
+                <div><label>Confirm new password</label><div class="pwd-wrap"><input id="pwdConfirm" type="password"/><button type="button" class="pwd-toggle" onclick="togglePwd(this)">Show</button></div></div>
               </div>
               <button type="submit" class="btn-red" style="margin-top:14px">Update password</button>
             </form>
@@ -1773,6 +1782,12 @@
   let user = JSON.parse(localStorage.getItem('lm_user') || 'null');
   if (!user) window.location.href = './login.html';
   function logout() { localStorage.removeItem('lm_user'); localStorage.removeItem('lm_token'); window.location.href = './login.html'; }
+  function togglePwd(btn) {
+    const input = btn.parentElement.querySelector('input');
+    const showing = input.type === 'password';
+    input.type = showing ? 'text' : 'password';
+    btn.textContent = showing ? 'Hide' : 'Show';
+  }
 
   /* ===== API HELPER (Postgres-backed endpoints) ===== */
   async function api(path, opts = {}) {
