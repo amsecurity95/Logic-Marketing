@@ -43,7 +43,7 @@ const app = express();
 app.set('trust proxy', true);
 app.use(helmet({ contentSecurityPolicy: false })); // CSP set per-page in HTML
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '50mb' }));
 
 // ============================================================
 // Helpers
@@ -353,12 +353,58 @@ app.get('/api/messages', auth, async (req, res) => {
 });
 app.post('/api/messages', auth, async (req, res) => {
   const me = (await pool.query('SELECT name, color, avatar_url FROM team WHERE id=$1', [req.user.id])).rows[0];
+  const attachments = Array.isArray(req.body.attachments) ? req.body.attachments : [];
   const { rows } = await pool.query(
-    `INSERT INTO messages (channel, from_id, from_name, from_color, from_avatar, text)
-     VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-    [req.body.channel, req.user.id, me.name, me.color, me.avatar_url, req.body.text]
+    `INSERT INTO messages (channel, from_id, from_name, from_color, from_avatar, text, attachments)
+     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+    [req.body.channel, req.user.id, me.name, me.color, me.avatar_url, req.body.text, JSON.stringify(attachments)]
   );
   res.json(rows[0]);
+});
+// Toggle a reaction on a message (server stores reactions as { emoji: [userId, ...] }).
+app.patch('/api/messages/:id/react', auth, async (req, res) => {
+  const id = Number(req.params.id);
+  const emoji = String(req.body?.emoji || '');
+  if (!emoji) return res.status(400).json({ error: 'emoji required' });
+  const { rows } = await pool.query('SELECT reactions FROM messages WHERE id=$1', [id]);
+  if (!rows.length) return res.status(404).json({ error: 'Not found' });
+  const r = rows[0].reactions || {};
+  const arr = Array.isArray(r[emoji]) ? r[emoji].slice() : [];
+  const i = arr.indexOf(req.user.id);
+  if (i >= 0) arr.splice(i, 1); else arr.push(req.user.id);
+  if (arr.length) r[emoji] = arr; else delete r[emoji];
+  await pool.query('UPDATE messages SET reactions=$2 WHERE id=$1', [id, JSON.stringify(r)]);
+  res.json({ reactions: r });
+});
+
+// ============================================================
+// GENERIC SHARED KV STORE (drop-in replacement for the dead Cloudflare Worker).
+// Front-end cloudSync system reads/writes JSON blobs here so clients/inbox/
+// channels/transactions/payments/todos sync across all team members.
+// ============================================================
+const STORE_KEYS = new Set(['clients','inbox','channels','transactions','payments','todos']);
+app.get('/api/store', auth, async (_req, res) => {
+  const { rows } = await pool.query('SELECT key, ts FROM kv');
+  const updatedAt = {};
+  for (const r of rows) updatedAt[r.key] = Number(r.ts) || 0;
+  res.json({ updatedAt });
+});
+app.get('/api/store/:key', auth, async (req, res) => {
+  if (!STORE_KEYS.has(req.params.key)) return res.status(404).json({ error: 'Unknown key' });
+  const { rows } = await pool.query('SELECT data, ts FROM kv WHERE key=$1', [req.params.key]);
+  if (!rows.length) return res.json({ data: null, ts: 0 });
+  res.json({ data: rows[0].data, ts: Number(rows[0].ts) });
+});
+app.put('/api/store/:key', auth, async (req, res) => {
+  if (!STORE_KEYS.has(req.params.key)) return res.status(404).json({ error: 'Unknown key' });
+  const ts = Number(req.body?.ts) || Date.now();
+  const data = req.body?.data ?? null;
+  await pool.query(
+    `INSERT INTO kv (key, data, ts) VALUES ($1, $2, $3)
+     ON CONFLICT (key) DO UPDATE SET data=EXCLUDED.data, ts=EXCLUDED.ts, updated_at=now()`,
+    [req.params.key, JSON.stringify(data), ts]
+  );
+  res.json({ ok: true, ts });
 });
 
 // ============================================================

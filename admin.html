@@ -1816,38 +1816,30 @@
       return list;
     } catch (e) { console.warn('equipment sync failed:', e.message); return null; }
   }
-  // Messages — pull whole channel history (server caps at 500) and merge into local cache.
+  // Messages — pull whole channel history (server caps at 500) for every channel the user can see.
   async function syncMessagesFromServer() {
     try {
-      // We pull general + every dm channel involving the user + custom channels they're in.
       const team = JSON.parse(localStorage.getItem(KEYS.team) || '[]');
       const customChannels = JSON.parse(localStorage.getItem(KEYS.channels) || '[]');
       const channels = new Set(['general']);
       team.forEach(t => { if (t.id !== user.id) channels.add('dm:' + [user.id, t.id].sort((a,b)=>a-b).join('-')); });
       customChannels.forEach(c => { if (!c.members || c.members.includes(user.id)) channels.add(c.id); });
-      const local = JSON.parse(localStorage.getItem(KEYS.messages) || '[]');
-      // Keep only client-only state (reactions/attachments) keyed by server id; we replace the rest.
-      const overlay = {};
-      local.forEach(m => { if (m.serverId && (m.reactions || m.attachments?.length)) overlay[m.serverId] = { reactions: m.reactions, attachments: m.attachments }; });
       const all = [];
       for (const ch of channels) {
         const rows = await api(`/api/messages?channel=${encodeURIComponent(ch)}`);
-        rows.forEach(r => {
-          const o = overlay[r.id] || {};
-          all.push({
-            id: 's-' + r.id,
-            serverId: Number(r.id),
-            channel: r.channel,
-            fromId: Number(r.from_id),
-            fromName: r.from_name,
-            fromColor: r.from_color || '#d30000',
-            fromAvatar: r.from_avatar || '',
-            text: r.text,
-            ts: new Date(r.ts).getTime(),
-            reactions: o.reactions,
-            attachments: o.attachments
-          });
-        });
+        rows.forEach(r => all.push({
+          id: 's-' + r.id,
+          serverId: Number(r.id),
+          channel: r.channel,
+          fromId: Number(r.from_id),
+          fromName: r.from_name,
+          fromColor: r.from_color || '#d30000',
+          fromAvatar: r.from_avatar || '',
+          text: r.text,
+          ts: new Date(r.ts).getTime(),
+          attachments: Array.isArray(r.attachments) ? r.attachments : [],
+          reactions: r.reactions && typeof r.reactions === 'object' ? r.reactions : {}
+        }));
       }
       localStorage.setItem(KEYS.messages, JSON.stringify(all));
       return all;
@@ -1971,20 +1963,19 @@
   const load = (k, fallback) => { try { return JSON.parse(localStorage.getItem(k)) || fallback; } catch { return fallback; } };
   const save = (k, v, opts) => { localStorage.setItem(k, JSON.stringify(v)); if (!opts || !opts.silent) cloudSync.queue(k); };
 
-  /* ===== CLOUD SYNC (Cloudflare Worker → R2) =====
+  /* ===== CLOUD SYNC (own Express backend → Postgres `kv` table) =====
      Local-first writes; debounced upload after each save.
      On boot, fetches the manifest and pulls any blob newer than local.
-     Configure window.LM_SYNC = { url: 'https://...', token: '...' } before init,
-     OR leave LM_SYNC_URL/LM_SYNC_TOKEN here. */
-  const LM_SYNC_URL = window.LM_SYNC_URL || 'https://logic-marketing-store.aimarmwembo1.workers.dev';
-  const LM_SYNC_TOKEN = window.LM_SYNC_TOKEN || 'lm-store-2026-aimar';
+     Authenticated with the same JWT used everywhere else (lm_token). */
+  const LM_SYNC_URL = ''; // same-origin
+  const lmAuthHeaders = () => ({ 'Authorization': `Bearer ${localStorage.getItem('lm_token') || ''}` });
   // 'team', 'equipment', 'messages' are authoritative in Postgres (synced via /api/...).
   const SYNCABLE = ['clients','inbox','channels','transactions','payments','todos'];
   const STORAGE_TO_REMOTE = Object.fromEntries(SYNCABLE.map(k => [KEYS[k], k]));
   const REMOTE_TO_STORAGE = Object.fromEntries(SYNCABLE.map(k => [k, KEYS[k]]));
 
   const cloudSync = {
-    enabled: !!LM_SYNC_URL,
+    enabled: true, // own backend is always available (same-origin)
     pending: new Set(),
     timer: null,
     pulling: false,
@@ -2003,7 +1994,7 @@
         try {
           await fetch(`${LM_SYNC_URL}/api/store/${remoteKey}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${LM_SYNC_TOKEN}` },
+            headers: { 'Content-Type': 'application/json', ...lmAuthHeaders() },
             body: JSON.stringify({ ts: Date.now(), data }),
           });
           localStorage.setItem('lm_sync_ts_' + remoteKey, String(Date.now()));
@@ -2014,7 +2005,7 @@
       if (!this.enabled) return;
       this.pulling = true;
       try {
-        const res = await fetch(`${LM_SYNC_URL}/api/store`, { headers: { 'Authorization': `Bearer ${LM_SYNC_TOKEN}` } });
+        const res = await fetch(`${LM_SYNC_URL}/api/store`, { headers: { ...lmAuthHeaders() } });
         if (!res.ok) { console.warn('manifest fetch failed', res.status); return; }
         const { updatedAt = {} } = await res.json();
         const pulls = [];
@@ -2029,7 +2020,7 @@
     },
     async pullOne(remoteKey, remoteTs) {
       try {
-        const res = await fetch(`${LM_SYNC_URL}/api/store/${remoteKey}`, { headers: { 'Authorization': `Bearer ${LM_SYNC_TOKEN}` } });
+        const res = await fetch(`${LM_SYNC_URL}/api/store/${remoteKey}`, { headers: { ...lmAuthHeaders() } });
         if (!res.ok) return;
         const { data } = await res.json();
         if (data === null || data === undefined) return;
@@ -2043,7 +2034,29 @@
     SYNCABLE.forEach(k => localStorage.removeItem('lm_sync_ts_' + k));
     localStorage.setItem('lm_force_resync_v2', '1');
   }
+  // One-time migration: push existing localStorage data to the shared kv store
+  // for any key the server doesn't yet have. Runs before the first pull on boot.
+  async function migrateLocalToServer() {
+    if (localStorage.getItem('lm_kv_migrated_v1')) return;
+    try {
+      const res = await fetch(`${LM_SYNC_URL}/api/store`, { headers: { ...lmAuthHeaders() } });
+      if (!res.ok) return;
+      const { updatedAt = {} } = await res.json();
+      for (const remoteKey of SYNCABLE) {
+        if (updatedAt[remoteKey]) continue; // server already has data — don't overwrite
+        const local = localStorage.getItem(REMOTE_TO_STORAGE[remoteKey]);
+        if (!local || local === 'null' || local === '[]' || local === '{}') continue;
+        await fetch(`${LM_SYNC_URL}/api/store/${remoteKey}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', ...lmAuthHeaders() },
+          body: JSON.stringify({ ts: Date.now(), data: JSON.parse(local) })
+        });
+      }
+      localStorage.setItem('lm_kv_migrated_v1', '1');
+    } catch (e) { console.warn('kv migration skipped:', e.message); }
+  }
   async function pullAllRemote() {
+    await migrateLocalToServer();
     await Promise.all([
       cloudSync.pullAll(),
       syncTeamFromServer(),
@@ -3465,27 +3478,12 @@
     const ta = document.getElementById('chatInput');
     const text = (ta?.value || '').trim();
     if (!text && !pendingAttachments.length) return;
-    if (pendingAttachments.length && !text) {
-      toast({ type: 'error', msg: 'Attachments are not yet synced across users — please add a text message too.' });
-    }
     const channel = activeChannel;
-    const sentAttachments = pendingAttachments.slice();
+    const attachments = pendingAttachments.slice();
     pendingAttachments = [];
     ta.value = ''; autoGrow(ta);
     try {
-      const row = await api('/api/messages', { method: 'POST', body: { channel, text: text || '(attachment)' } });
-      // Merge attachments locally (they don't persist server-side yet).
-      if (sentAttachments.length) {
-        const msgs = load(KEYS.messages, []);
-        msgs.push({
-          id: 's-' + row.id, serverId: Number(row.id),
-          channel: row.channel, fromId: Number(row.from_id), fromName: row.from_name,
-          fromColor: row.from_color, fromAvatar: row.from_avatar || '',
-          text: row.text, ts: new Date(row.ts).getTime(),
-          attachments: sentAttachments
-        });
-        save(KEYS.messages, msgs, { silent: true });
-      }
+      await api('/api/messages', { method: 'POST', body: { channel, text: text || '', attachments } });
     } catch (e) { toast({ type: 'error', msg: e.message }); return; }
     await syncMessagesFromServer();
     renderChat();
@@ -3555,15 +3553,14 @@
     const el = document.getElementById(id); if (!el) return;
     el.style.display = el.style.display === 'none' ? 'flex' : 'none';
   }
-  function toggleReaction(msgId, emoji) {
+  async function toggleReaction(msgId, emoji) {
     const msgs = load(KEYS.messages, []);
-    const m = msgs.find(x => String(x.id) === String(msgId)); if (!m) return;
-    m.reactions = m.reactions || {};
-    m.reactions[emoji] = m.reactions[emoji] || [];
-    const i = m.reactions[emoji].indexOf(user.id);
-    if (i >= 0) m.reactions[emoji].splice(i, 1); else m.reactions[emoji].push(user.id);
-    if (!m.reactions[emoji].length) delete m.reactions[emoji];
-    save(KEYS.messages, msgs);
+    const m = msgs.find(x => String(x.id) === String(msgId)); if (!m || !m.serverId) return;
+    try {
+      const { reactions } = await api(`/api/messages/${m.serverId}/react`, { method: 'PATCH', body: { emoji } });
+      m.reactions = reactions || {};
+      save(KEYS.messages, msgs, { silent: true });
+    } catch (e) { toast({ type: 'error', msg: e.message }); return; }
     renderChat();
   }
   document.addEventListener('click', (e) => {

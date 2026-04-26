@@ -146,3 +146,17 @@ CREATE TABLE IF NOT EXISTS payments (
   created_at  TIMESTAMPTZ DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_payments_team_date ON payments(team_id, paid_on);
+
+-- Generic shared key/value store used by the front-end cloudSync system.
+-- Lets clients/inbox/channels/transactions/payments/todos persist + sync across users
+-- without needing per-table CRUD endpoints.
+CREATE TABLE IF NOT EXISTS kv (
+  key   TEXT PRIMARY KEY,
+  data  JSONB,
+  ts    BIGINT NOT NULL DEFAULT 0,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Extend messages with attachments + reactions JSON blobs (idempotent for older DBs).
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS reactions   JSONB DEFAULT '{}'::jsonb;
