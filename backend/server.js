@@ -370,10 +370,26 @@ async function lookupGeo(addr) {
   if (!addr || addr === '127.0.0.1' || addr.startsWith('10.') || addr.startsWith('192.168.')) return null;
   const hit = geoCache.get(addr);
   if (hit && (Date.now() - hit.t) < 24*60*60*1000) return hit.v;
+  // Try ip-api.com first (HTTP, fast, 45/min from a single IP), then ipwho.is.
+  try {
+    const r = await fetch(`http://ip-api.com/json/${encodeURIComponent(addr)}?fields=status,country,countryCode,regionName,city`);
+    const d = await r.json();
+    if (d && d.status === 'success') {
+      const cc = d.countryCode || '';
+      const v = {
+        city: d.city || '', region: d.regionName || '', country: d.country || '',
+        country_code: cc,
+        flag: cc ? String.fromCodePoint(...[...cc.toUpperCase()].map(c => 127397 + c.charCodeAt(0))) : ''
+      };
+      geoCache.set(addr, { t: Date.now(), v });
+      return v;
+    }
+    console.log('ip-api failed', addr, d);
+  } catch (e) { console.log('ip-api error', addr, e?.message); }
   try {
     const r = await fetch(`https://ipwho.is/${encodeURIComponent(addr)}`);
     const d = await r.json();
-    if (!d || d.success === false) { console.log('geo lookup failed', addr, d); return null; }
+    if (!d || d.success === false) { console.log('ipwho failed', addr, d); return null; }
     const v = {
       city: d.city || '', region: d.region || '', country: d.country || '',
       country_code: d.country_code || '',
@@ -381,7 +397,7 @@ async function lookupGeo(addr) {
     };
     geoCache.set(addr, { t: Date.now(), v });
     return v;
-  } catch (e) { console.log('geo fetch error', addr, e?.message); return null; }
+  } catch (e) { console.log('ipwho error', addr, e?.message); return null; }
 }
 
 // Debug endpoint — returns what the server sees + a live geo lookup.
