@@ -373,7 +373,7 @@ async function lookupGeo(addr) {
   try {
     const r = await fetch(`https://ipwho.is/${encodeURIComponent(addr)}`);
     const d = await r.json();
-    if (!d || d.success === false) return null;
+    if (!d || d.success === false) { console.log('geo lookup failed', addr, d); return null; }
     const v = {
       city: d.city || '', region: d.region || '', country: d.country || '',
       country_code: d.country_code || '',
@@ -381,8 +381,15 @@ async function lookupGeo(addr) {
     };
     geoCache.set(addr, { t: Date.now(), v });
     return v;
-  } catch { return null; }
+  } catch (e) { console.log('geo fetch error', addr, e?.message); return null; }
 }
+
+// Debug endpoint — returns what the server sees + a live geo lookup.
+app.get('/api/track/debug', async (req, res) => {
+  const addr = ip(req);
+  const g = await lookupGeo(addr);
+  res.json({ addr, geo: g, headers: { xff: req.headers['x-forwarded-for'], cf: req.headers['cf-connecting-ip'] } });
+});
 
 app.post('/api/track/visit', async (req, res) => {
   const v = req.body || {};
