@@ -154,38 +154,36 @@
 <script>
   const form = document.getElementById('loginForm');
   const err = document.getElementById('err');
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    err.style.color = '';
+    err.textContent = '';
     const email = document.getElementById('email').value.trim().toLowerCase();
     const password = document.getElementById('password').value;
     if (!email.includes('@') || password.length < 4) {
       err.textContent = 'Enter a valid email and password.';
       return;
     }
-    let team = [];
-    try { team = JSON.parse(localStorage.getItem('lm_team') || '[]'); } catch(_) {}
-    // Bootstrap: first sign-in becomes Admin (creates the team)
-    if (!team.length) {
-      const newAdmin = {
-        id: Date.now(),
-        name: email.split('@')[0].replace(/[._]/g,' ').replace(/\b\w/g, c=>c.toUpperCase()),
-        email, password, role: 'Admin', title: 'Founder', phone: '', color: '#d30000', avatar: '',
-        joinedAt: new Date().toISOString().slice(0,10)
-      };
-      team = [newAdmin];
-      localStorage.setItem('lm_team', JSON.stringify(team));
-      localStorage.setItem('lm_user', JSON.stringify({ id: newAdmin.id, name: newAdmin.name, email: newAdmin.email, role: newAdmin.role, title: newAdmin.title, color: newAdmin.color, avatar: newAdmin.avatar, loginAt: Date.now() }));
-      window.location.href = './admin.html';
-      return;
+    try {
+      const r = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await r.json();
+      if (!r.ok) { err.textContent = data.error || 'Sign-in failed.'; return; }
+      localStorage.setItem('lm_token', data.token);
+      localStorage.setItem('lm_user', JSON.stringify({ ...data.user, loginAt: Date.now() }));
+      if (data.bootstrapped) {
+        err.style.color = '#16a34a';
+        err.textContent = 'Account created — you are now Admin. Redirecting…';
+        setTimeout(() => window.location.href = './admin.html', 700);
+      } else {
+        window.location.href = './admin.html';
+      }
+    } catch (_) {
+      err.textContent = 'Network error — backend unreachable.';
     }
-    const member = team.find(t => t.email.toLowerCase() === email);
-    if (!member) { err.textContent = 'No team account found for that email.'; return; }
-    if (member.password !== password) { err.textContent = 'Incorrect password.'; return; }
-    localStorage.setItem('lm_user', JSON.stringify({
-      id: member.id, name: member.name, email: member.email, role: member.role, title: member.title,
-      color: member.color, avatar: member.avatar, loginAt: Date.now()
-    }));
-    window.location.href = './admin.html';
   });
 </script>
 </body>

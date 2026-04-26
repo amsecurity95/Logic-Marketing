@@ -1772,7 +1772,87 @@
   /* ===== AUTH (load early so seeds can use it) ===== */
   let user = JSON.parse(localStorage.getItem('lm_user') || 'null');
   if (!user) window.location.href = './login.html';
-  function logout() { localStorage.removeItem('lm_user'); window.location.href = './login.html'; }
+  function logout() { localStorage.removeItem('lm_user'); localStorage.removeItem('lm_token'); window.location.href = './login.html'; }
+
+  /* ===== API HELPER (Postgres-backed endpoints) ===== */
+  async function api(path, opts = {}) {
+    const token = localStorage.getItem('lm_token');
+    const headers = { ...(opts.headers || {}) };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    if (opts.body && typeof opts.body !== 'string') {
+      headers['Content-Type'] = 'application/json';
+      opts.body = JSON.stringify(opts.body);
+    }
+    const r = await fetch(path, { ...opts, headers });
+    if (r.status === 401) { logout(); throw new Error('Session expired'); }
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || `Request failed (${r.status})`);
+    return data;
+  }
+  // Mirror server team rows into the localStorage shape the rest of the app uses.
+  async function syncTeamFromServer() {
+    try {
+      const rows = await api('/api/team');
+      const list = rows.map(r => ({
+        id: Number(r.id), name: r.name, email: r.email, role: r.role, title: r.title || '',
+        phone: r.phone || '', color: r.color || '#d30000', avatar: r.avatar_url || '',
+        joinedAt: (r.joined_at || '').slice(0,10)
+      }));
+      localStorage.setItem(KEYS.team, JSON.stringify(list));
+      return list;
+    } catch (e) { console.warn('team sync failed:', e.message); return null; }
+  }
+  // Equipment — mirror server rows into local cache shape used by renderEquipment.
+  async function syncEquipmentFromServer() {
+    try {
+      const rows = await api('/api/equipment');
+      const list = rows.map(r => ({
+        id: Number(r.id), name: r.name, category: r.category || 'other',
+        price: Number(r.price), saved: Number(r.saved || 0),
+        img: r.img_url || '',
+        acquiredAt: r.acquired_at ? new Date(r.acquired_at).getTime() : undefined
+      }));
+      localStorage.setItem(KEYS.equipment, JSON.stringify(list));
+      return list;
+    } catch (e) { console.warn('equipment sync failed:', e.message); return null; }
+  }
+  // Messages — pull whole channel history (server caps at 500) and merge into local cache.
+  async function syncMessagesFromServer() {
+    try {
+      // We pull general + every dm channel involving the user + custom channels they're in.
+      const team = JSON.parse(localStorage.getItem(KEYS.team) || '[]');
+      const customChannels = JSON.parse(localStorage.getItem(KEYS.channels) || '[]');
+      const channels = new Set(['general']);
+      team.forEach(t => { if (t.id !== user.id) channels.add('dm:' + [user.id, t.id].sort((a,b)=>a-b).join('-')); });
+      customChannels.forEach(c => { if (!c.members || c.members.includes(user.id)) channels.add(c.id); });
+      const local = JSON.parse(localStorage.getItem(KEYS.messages) || '[]');
+      // Keep only client-only state (reactions/attachments) keyed by server id; we replace the rest.
+      const overlay = {};
+      local.forEach(m => { if (m.serverId && (m.reactions || m.attachments?.length)) overlay[m.serverId] = { reactions: m.reactions, attachments: m.attachments }; });
+      const all = [];
+      for (const ch of channels) {
+        const rows = await api(`/api/messages?channel=${encodeURIComponent(ch)}`);
+        rows.forEach(r => {
+          const o = overlay[r.id] || {};
+          all.push({
+            id: 's-' + r.id,
+            serverId: Number(r.id),
+            channel: r.channel,
+            fromId: Number(r.from_id),
+            fromName: r.from_name,
+            fromColor: r.from_color || '#d30000',
+            fromAvatar: r.from_avatar || '',
+            text: r.text,
+            ts: new Date(r.ts).getTime(),
+            reactions: o.reactions,
+            attachments: o.attachments
+          });
+        });
+      }
+      localStorage.setItem(KEYS.messages, JSON.stringify(all));
+      return all;
+    } catch (e) { console.warn('messages sync failed:', e.message); return null; }
+  }
   function applyUserToUI() {
     const list = JSON.parse(localStorage.getItem(KEYS.team) || '[]');
     const me = list.find(t => t.id === user.id) || user;
@@ -1898,7 +1978,8 @@
      OR leave LM_SYNC_URL/LM_SYNC_TOKEN here. */
   const LM_SYNC_URL = window.LM_SYNC_URL || 'https://logic-marketing-store.aimarmwembo1.workers.dev';
   const LM_SYNC_TOKEN = window.LM_SYNC_TOKEN || 'lm-store-2026-aimar';
-  const SYNCABLE = ['clients','equipment','inbox','team','messages','channels','transactions','payments','todos'];
+  // 'team', 'equipment', 'messages' are authoritative in Postgres (synced via /api/...).
+  const SYNCABLE = ['clients','inbox','channels','transactions','payments','todos'];
   const STORAGE_TO_REMOTE = Object.fromEntries(SYNCABLE.map(k => [KEYS[k], k]));
   const REMOTE_TO_STORAGE = Object.fromEntries(SYNCABLE.map(k => [k, KEYS[k]]));
 
@@ -1962,12 +2043,22 @@
     SYNCABLE.forEach(k => localStorage.removeItem('lm_sync_ts_' + k));
     localStorage.setItem('lm_force_resync_v2', '1');
   }
+  async function pullAllRemote() {
+    await Promise.all([
+      cloudSync.pullAll(),
+      syncTeamFromServer(),
+      syncEquipmentFromServer(),
+      syncMessagesFromServer()
+    ]);
+    if (typeof refresh === 'function') refresh();
+    if (typeof renderChat === 'function' && document.getElementById('page-messages')?.classList.contains('active')) renderChat();
+  }
   // Periodic background pull so other devices' edits show up.
-  setInterval(() => cloudSync.pullAll(), 10000);
+  setInterval(pullAllRemote, 10000);
   // Pull on focus to feel snappy when switching tabs.
-  window.addEventListener('focus', () => cloudSync.pullAll());
+  window.addEventListener('focus', pullAllRemote);
   // Initial pull on boot so first paint reflects cloud state.
-  cloudSync.pullAll().then(() => { if (typeof refresh === 'function') refresh(); });
+  pullAllRemote();
 
   /* ===== SEED DATA ===== */
   const STAGES = [
@@ -2724,42 +2815,33 @@
     document.getElementById('eImgUrl').value = '';
     setEqPhotoPreview('');
   }
-  function moveBackToWishlist(id) {
+  async function moveBackToWishlist(id) {
     const list = load(KEYS.equipment, []);
     const it = list.find(e => e.id === id); if (!it) return;
-    it.saved = Math.max(0, it.price - 1);
-    delete it.acquiredAt;
-    save(KEYS.equipment, list); refresh();
+    try { await api(`/api/equipment/${id}`, { method: 'PUT', body: { saved: Math.max(0, it.price - 1) } }); }
+    catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncEquipmentFromServer(); refresh();
     toast({ type: 'info', title: 'Moved back to wishlist', msg: it.name });
   }
-  function saveEq() {
+  async function saveEq() {
     const name = document.getElementById('eName').value.trim();
     const price = parseFloat(document.getElementById('ePrice').value);
     if (!name || !price) { toast({ type: 'error', msg: 'Name and price are required.' }); return; }
     const saved = parseFloat(document.getElementById('eSaved').value) || 0;
     const uploaded = document.getElementById('eImg').value.trim();
     const urlField = document.getElementById('eImgUrl').value.trim();
-    const img = uploaded || urlField;
+    const img_url = uploaded || urlField;
     const category = document.getElementById('eCategory').value || 'other';
-    const list = load(KEYS.equipment, []);
-    if (editingEqId) {
-      const it = list.find(x => x.id === editingEqId);
-      if (it) {
-        it.name = name; it.price = price; it.saved = saved; it.img = img; it.category = category;
-        if (saved >= price && !it.acquiredAt) it.acquiredAt = Date.now();
-        if (saved < price) delete it.acquiredAt;
+    try {
+      if (editingEqId) {
+        await api(`/api/equipment/${editingEqId}`, { method: 'PUT', body: { name, price, saved, img_url, category } });
+      } else {
+        await api('/api/equipment', { method: 'POST', body: { name, price, saved, img_url, category } });
       }
-      save(KEYS.equipment, list);
-      closeModal('modalEq'); refresh();
-      toast({ title: 'Equipment updated', msg: name });
-    } else {
-      const item = { id: Date.now(), name, img, price, saved, category };
-      if (saved >= price) item.acquiredAt = Date.now();
-      list.unshift(item);
-      save(KEYS.equipment, list);
-      closeModal('modalEq'); refresh();
-      toast({ title: saved >= price ? 'Added to available gear' : 'Equipment added', msg: `${name} added to ${saved >= price ? 'inventory' : 'wishlist'}.` });
-    }
+    } catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncEquipmentFromServer();
+    closeModal('modalEq'); refresh();
+    toast({ title: editingEqId ? 'Equipment updated' : (saved >= price ? 'Added to available gear' : 'Equipment added'), msg: name });
   }
   async function addSavings(id) {
     const it = load(KEYS.equipment, []).find(e => e.id === id);
@@ -2775,17 +2857,16 @@
     if (v === null) return;
     const amt = parseFloat(v);
     if (!amt || amt <= 0) { toast({ type: 'error', msg: 'Enter a valid amount.' }); return; }
-    const list = load(KEYS.equipment, []);
-    const item = list.find(e => e.id === id);
-    const wasFunded = item.saved >= item.price;
-    item.saved = Math.min(item.price, item.saved + amt);
-    const nowFunded = item.saved >= item.price;
-    if (nowFunded && !wasFunded) item.acquiredAt = Date.now();
-    save(KEYS.equipment, list); refresh();
+    const wasFunded = it.saved >= it.price;
+    const nextSaved = Math.min(it.price, it.saved + amt);
+    try { await api(`/api/equipment/${id}`, { method: 'PUT', body: { saved: nextSaved } }); }
+    catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncEquipmentFromServer(); refresh();
+    const nowFunded = nextSaved >= it.price;
     toast({
       type: 'success',
       title: nowFunded ? 'Fully funded — moved to Available!' : `+$${amt} saved`,
-      msg: nowFunded ? `${item.name} is now in your available gear.` : `${item.name} — $${item.price - item.saved} to go.`,
+      msg: nowFunded ? `${it.name} is now in your available gear.` : `${it.name} — $${it.price - nextSaved} to go.`,
       duration: nowFunded ? 5000 : 3500
     });
   }
@@ -2793,8 +2874,9 @@
     const it = load(KEYS.equipment, []).find(e => e.id === id);
     const ok = await confirmDialog({ title: 'Remove equipment?', msg: `${it?.name || 'This item'} and its saved progress will be removed.`, okText: 'Remove' });
     if (!ok) return;
-    save(KEYS.equipment, load(KEYS.equipment, []).filter(e => e.id !== id));
-    refresh();
+    try { await api(`/api/equipment/${id}`, { method: 'DELETE' }); }
+    catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncEquipmentFromServer(); refresh();
     toast({ type: 'info', title: 'Removed', msg: it?.name || '' });
   }
 
@@ -3000,36 +3082,27 @@
     document.getElementById('tmPassword').value = m.password || '';
     document.getElementById('modalTeam').classList.add('show');
   }
-  function saveTeamMember() {
+  async function saveTeamMember() {
     const name = document.getElementById('tmName').value.trim();
     const email = document.getElementById('tmEmail').value.trim();
     const password = document.getElementById('tmPassword').value;
     if (!name || !email) { toast({ type: 'error', msg: 'Name and email are required.' }); return; }
     if (!editingTeamId && password.length < 4) { toast({ type: 'error', msg: 'Password must be at least 4 characters.' }); return; }
-    const list = load(KEYS.team, []);
-    if (editingTeamId) {
-      const m = list.find(x => x.id === editingTeamId); if (!m) return;
-      m.name = name; m.email = email;
-      m.title = document.getElementById('tmTitle2').value.trim();
-      m.phone = document.getElementById('tmPhone').value.trim();
-      m.role = document.getElementById('tmRole').value;
-      if (password) m.password = password;
-    } else {
-      if (list.some(x => x.email.toLowerCase() === email.toLowerCase())) {
-        toast({ type: 'error', msg: 'A team member with that email already exists.' }); return;
+    const title = document.getElementById('tmTitle2').value.trim();
+    const phone = document.getElementById('tmPhone').value.trim();
+    const role = document.getElementById('tmRole').value;
+    try {
+      if (editingTeamId) {
+        const body = { name, email, title, phone, role };
+        if (password) body.password = password;
+        await api(`/api/team/${editingTeamId}`, { method: 'PUT', body });
+      } else {
+        const existing = load(KEYS.team, []);
+        const color = AVATAR_COLORS[existing.length % AVATAR_COLORS.length];
+        await api('/api/team', { method: 'POST', body: { name, email, password, title, phone, role, color } });
       }
-      list.push({
-        id: Date.now(),
-        name, email, password,
-        title: document.getElementById('tmTitle2').value.trim(),
-        phone: document.getElementById('tmPhone').value.trim(),
-        role: document.getElementById('tmRole').value,
-        color: AVATAR_COLORS[list.length % AVATAR_COLORS.length],
-        avatar: '',
-        joinedAt: new Date().toISOString().slice(0,10)
-      });
-    }
-    save(KEYS.team, list);
+    } catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncTeamFromServer();
     closeModal('modalTeam');
     if (editingTeamId === user.id) applyUserToUI();
     refresh();
@@ -3039,7 +3112,9 @@
     const m = load(KEYS.team, []).find(x => x.id === id);
     const ok = await confirmDialog({ title: 'Remove team member?', msg: `${m?.name || 'This person'} will lose access to the control panel.`, okText: 'Remove' });
     if (!ok) return;
-    save(KEYS.team, load(KEYS.team, []).filter(x => x.id !== id));
+    try { await api(`/api/team/${id}`, { method: 'DELETE' }); }
+    catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncTeamFromServer();
     refresh();
     toast({ type: 'info', title: 'Removed', msg: m?.name || '' });
   }
@@ -3386,26 +3461,33 @@
     });
   }
 
-  function sendMessage() {
+  async function sendMessage() {
     const ta = document.getElementById('chatInput');
     const text = (ta?.value || '').trim();
     if (!text && !pendingAttachments.length) return;
-    const me = load(KEYS.team, []).find(x => x.id === user.id) || user;
-    const msgs = load(KEYS.messages, []);
-    msgs.push({
-      id: Date.now() + Math.random(),
-      channel: activeChannel,
-      fromId: user.id,
-      fromName: me.name,
-      fromColor: me.color,
-      fromAvatar: me.avatar || '',
-      text,
-      attachments: pendingAttachments.slice(),
-      ts: Date.now()
-    });
-    save(KEYS.messages, msgs);
+    if (pendingAttachments.length && !text) {
+      toast({ type: 'error', msg: 'Attachments are not yet synced across users — please add a text message too.' });
+    }
+    const channel = activeChannel;
+    const sentAttachments = pendingAttachments.slice();
     pendingAttachments = [];
     ta.value = ''; autoGrow(ta);
+    try {
+      const row = await api('/api/messages', { method: 'POST', body: { channel, text: text || '(attachment)' } });
+      // Merge attachments locally (they don't persist server-side yet).
+      if (sentAttachments.length) {
+        const msgs = load(KEYS.messages, []);
+        msgs.push({
+          id: 's-' + row.id, serverId: Number(row.id),
+          channel: row.channel, fromId: Number(row.from_id), fromName: row.from_name,
+          fromColor: row.from_color, fromAvatar: row.from_avatar || '',
+          text: row.text, ts: new Date(row.ts).getTime(),
+          attachments: sentAttachments
+        });
+        save(KEYS.messages, msgs, { silent: true });
+      }
+    } catch (e) { toast({ type: 'error', msg: e.message }); return; }
+    await syncMessagesFromServer();
     renderChat();
   }
 
