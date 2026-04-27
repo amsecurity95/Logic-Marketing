@@ -2032,7 +2032,8 @@
     pulling: false,
     queue(storageKey) {
       const remoteKey = STORAGE_TO_REMOTE[storageKey];
-      if (!remoteKey || !this.enabled || this.pulling) return;
+      if (!remoteKey || !this.enabled) return;
+      // Always queue — even if a pull is in flight — so saves are never silently dropped.
       this.pending.add(remoteKey);
       clearTimeout(this.timer);
       this.timer = setTimeout(() => this.flush(), 800);
@@ -2054,6 +2055,9 @@
     },
     async pullAll() {
       if (!this.enabled) return;
+      // If we have un-flushed local edits, flush them first so we don't pull stale
+      // server data over them. After flushing, we know server has our writes.
+      if (this.pending.size) { clearTimeout(this.timer); await this.flush(); }
       this.pulling = true;
       try {
         const res = await fetch(`${LM_SYNC_URL}/api/store`, { headers: { ...lmAuthHeaders() } });
@@ -2061,6 +2065,8 @@
         const { updatedAt = {} } = await res.json();
         const pulls = [];
         for (const remoteKey of SYNCABLE) {
+          // Skip any key that has un-flushed pending writes.
+          if (this.pending.has(remoteKey)) continue;
           const remoteTs = updatedAt[remoteKey] || 0;
           const localTs = Number(localStorage.getItem('lm_sync_ts_' + remoteKey) || 0);
           if (remoteTs > localTs) pulls.push(this.pullOne(remoteKey, remoteTs));
@@ -2117,6 +2123,8 @@
     if (typeof refresh === 'function') refresh();
     if (typeof renderChat === 'function' && document.getElementById('page-messages')?.classList.contains('active')) renderChat();
     if (typeof renderTodos === 'function' && document.getElementById('page-todo')?.classList.contains('active')) renderTodos();
+    if (typeof renderFinance === 'function' && document.getElementById('page-finance')?.classList.contains('active')) renderFinance();
+    if (typeof renderInbox === 'function' && document.getElementById('page-inbox')?.classList.contains('active')) renderInbox();
   }
   // Periodic background pull so other devices' edits show up.
   setInterval(pullAllRemote, 10000);
