@@ -215,6 +215,41 @@
   .todo-empty {
     text-align: center; color: var(--muted); padding: 60px 20px; font-size: 14px;
   }
+  .todo-team { margin-top: 40px; }
+  .todo-team-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--muted); margin-bottom: 14px;
+  }
+  .todo-team-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
+  }
+  .todo-team-card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .todo-team-head { display: flex; align-items: center; gap: 12px; }
+  .todo-team-av {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px; overflow: hidden; flex-shrink: 0;
+  }
+  .todo-team-av img { width: 100%; height: 100%; object-fit: cover; }
+  .todo-team-name { font-size: 14px; font-weight: 700; }
+  .todo-team-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .todo-team-list { display: flex; flex-direction: column; gap: 6px; }
+  .todo-team-task {
+    display: flex; align-items: center; gap: 8px; font-size: 13px;
+    padding: 6px 0; border-top: 1px solid var(--line);
+  }
+  .todo-team-task .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid var(--line); display: inline-flex;
+    align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;
+  }
+  .todo-team-task .dot.done { background: var(--good, #16a34a); border-color: var(--good, #16a34a); color: #fff; }
+  .todo-team-task.done .text { color: var(--muted); text-decoration: line-through; }
+  .todo-team-task .text { word-break: break-word; }
+  .todo-team-empty { font-size: 12px; color: var(--muted); padding: 6px 0; }
 
   /* ===== CARDS / KPI ===== */
   .kpi-grid {
@@ -1353,6 +1388,7 @@
           <button class="btn-red" onclick="addTodo()">+ Add</button>
         </div>
         <div class="todo-list" id="todoList"></div>
+        <div class="todo-team" id="todoTeam"></div>
       </section>
 
       <!-- FINANCE -->
@@ -2080,6 +2116,7 @@
     ]);
     if (typeof refresh === 'function') refresh();
     if (typeof renderChat === 'function' && document.getElementById('page-messages')?.classList.contains('active')) renderChat();
+    if (typeof renderTodos === 'function' && document.getElementById('page-todo')?.classList.contains('active')) renderTodos();
   }
   // Periodic background pull so other devices' edits show up.
   setInterval(pullAllRemote, 10000);
@@ -3664,7 +3701,46 @@
         </div>
       `).join('');
     }
+    renderTeamTodos();
     updateTodoBadge();
+  }
+
+  function renderTeamTodos() {
+    const host = document.getElementById('todoTeam');
+    if (!host) return;
+    const { all } = todoStore();
+    const team = load(KEYS.team, []);
+    const others = team.filter(t => t.id !== user.id);
+    if (!others.length) { host.innerHTML = ''; return; }
+    const sections = others.map(t => {
+      const data = all[t.id] || { headline: '', tasks: [], history: {} };
+      const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+      const total = tasks.length;
+      const done = tasks.filter(x => x.done).length;
+      const initial = (t.name || '?').slice(0,1).toUpperCase();
+      const safeColor = /^#[0-9a-f]{3,8}$/i.test(t.color || '') ? t.color : '#d30000';
+      const av = t.avatar
+        ? `<div class="todo-team-av"><img src="${escUrl(t.avatar)}" alt=""/></div>`
+        : `<div class="todo-team-av" style="background:${safeColor}">${esc(initial)}</div>`;
+      const taskRows = tasks.length ? tasks.map(x => `
+        <div class="todo-team-task ${x.done ? 'done' : ''}">
+          <span class="dot ${x.done ? 'done' : ''}">${x.done ? '✓' : ''}</span>
+          <span class="text">${esc(x.text)}</span>
+        </div>`).join('') : '<div class="todo-team-empty">Nothing on the list yet.</div>';
+      return `
+        <div class="todo-team-card">
+          <div class="todo-team-head">
+            ${av}
+            <div style="flex:1;min-width:0">
+              <div class="todo-team-name">${esc(t.name)}</div>
+              <div class="todo-team-meta">${data.headline ? esc(data.headline) : '<span style="color:var(--muted)">No headline</span>'} · ${done}/${total} done</div>
+            </div>
+          </div>
+          <div class="todo-team-list">${taskRows}</div>
+        </div>
+      `;
+    }).join('');
+    host.innerHTML = `<div class="todo-team-title">Team to-dos</div><div class="todo-team-grid">${sections}</div>`;
   }
   function addTodo() {
     const ta = document.getElementById('todoInput');
