@@ -1897,28 +1897,6 @@
 </script>
 
 <script>
-  // Slow native wheel — divides each wheel tick so the page travels less.
-  // No interpolation, no queue, no lag. Pure native scroll, just shorter steps.
-  (function(){
-    // Only intervene on real mouse wheels, not trackpads (trackpads handle inertia natively).
-    let isTrackpad = false;
-    const detect = (e) => {
-      // Trackpad events have small deltaY (often <50) and deltaMode 0
-      if (Math.abs(e.deltaY) < 50 && e.deltaMode === 0) isTrackpad = true;
-      window.removeEventListener('wheel', detect);
-    };
-    window.addEventListener('wheel', detect, { passive: true, once: true });
-
-    window.addEventListener('wheel', (e) => {
-      if (isTrackpad) return;
-      e.preventDefault();
-      // Non-linear: small flick → tiny move, hard flick → big move.
-      const d = e.deltaY;
-      const accelerated = Math.sign(d) * Math.pow(Math.abs(d) / 100, 1.7) * 100;
-      window.scrollBy({ top: accelerated, left: 0, behavior: 'auto' });
-    }, { passive: false });
-  })();
-
   (function(){
     const v = document.getElementById('chambanaVideo');
     const p = document.getElementById('chambanaPlay');
