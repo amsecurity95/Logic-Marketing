@@ -1204,6 +1204,7 @@
       <div class="nav-item active" data-page="dashboard"><span class="icon" data-icon="dashboard"></span>Dashboard</div>
       <div class="nav-item" data-page="clients"><span class="icon" data-icon="users"></span>Clients <span class="badge" id="navClients">0</span></div>
       <div class="nav-item" data-page="analytics"><span class="icon" data-icon="chart"></span>Analytics</div>
+      <div class="nav-item nav-admin" data-page="monitor" style="display:none"><span class="icon" data-icon="chart"></span>Website Monitoring <span class="role-pill Admin" style="margin-left:auto;font-size:9px;padding:2px 6px">ADMIN</span></div>
       <div class="nav-section">Operations</div>
       <div class="nav-item" data-page="equipment"><span class="icon" data-icon="camera"></span>Equipment</div>
       <div class="nav-item" data-page="inbox"><span class="icon" data-icon="mail"></span>Inbox <span class="badge" id="navInbox">0</span></div>
@@ -1317,6 +1318,32 @@
             <table>
               <thead><tr><th>IP Address</th><th>Location</th><th>Page</th><th>Referrer</th><th>When</th></tr></thead>
               <tbody id="recentVisitors"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- WEBSITE MONITORING (admin only) -->
+      <section class="page" id="page-monitor">
+        <div class="page-head">
+          <div>
+            <h2>Website Monitoring <span class="role-pill Admin" style="font-size:10px;vertical-align:middle">ADMIN</span></h2>
+            <div class="sub">Visitor traffic across every site you've wired into this dashboard. Each row is a separate property.</div>
+          </div>
+          <button class="btn-outline" onclick="renderMonitor()">Refresh</button>
+        </div>
+        <div class="panel" style="padding:0;margin-bottom:18px">
+          <table>
+            <thead><tr><th>Site</th><th>Sessions (30d)</th><th>Page Views (30d)</th><th>Last Visit</th><th></th></tr></thead>
+            <tbody id="monSites"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="panel">
+          <h3>Recent Visitors — All Sites <span style="font-size:11px;font-weight:500;color:var(--muted)">— last 50, with IP</span></h3>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Site</th><th>IP Address</th><th>Location</th><th>Page</th><th>Referrer</th><th>When</th></tr></thead>
+              <tbody id="monRecent"></tbody>
             </table>
           </div>
         </div>
@@ -1923,6 +1950,9 @@
     const first = (me.name || '').split(' ')[0] || 'there';
     document.getElementById('greetTitle').textContent = `${greet}, ${first}`;
     document.getElementById('greetSub').textContent = `${me.role || 'Team'}${me.title ? ' · ' + me.title : ''} — here's what's happening across the agency.`;
+    // Admin-only nav items
+    const isAdmin = (me.role || user.role) === 'Admin';
+    document.querySelectorAll('.nav-admin').forEach(el => el.style.display = isAdmin ? '' : 'none');
     // Profile fields
     const pa = document.getElementById('profAvatar');
     pa.style.background = safeColor || 'var(--red)';
@@ -1971,6 +2001,7 @@
     document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === p));
     document.querySelectorAll('.page').forEach(s => s.classList.toggle('active', s.id === 'page-' + p));
     if (p === 'analytics') renderAnalytics();
+    if (p === 'monitor') renderMonitor();
     if (p === 'inbox') renderInbox();
     if (p === 'team') renderTeam();
     if (p === 'profile') applyUserToUI();
@@ -2598,6 +2629,55 @@
     save(KEYS.clients, load(KEYS.clients, []).filter(x => x.id !== id));
     closeDrawer(); refresh();
     toast({ type: 'info', title: 'Deleted', msg: c?.name || '' });
+  }
+
+  /* ===== WEBSITE MONITORING (admin only — multi-site overview) ===== */
+  async function renderMonitor() {
+    const sitesEl = document.getElementById('monSites');
+    const recentEl = document.getElementById('monRecent');
+    sitesEl.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Loading…</td></tr>`;
+    try {
+      const token = localStorage.getItem('lm_token');
+      const res = await fetch('/api/analytics/sites', { headers: { Authorization: 'Bearer ' + token } });
+      if (!res.ok) throw new Error('forbidden');
+      const d = await res.json();
+      const sites = d.sites || [];
+      sitesEl.innerHTML = sites.length ? sites.map(s => `
+        <tr>
+          <td><b>${esc(s.site)}</b></td>
+          <td>${(s.sessions||0).toLocaleString()}</td>
+          <td>${(s.page_views||0).toLocaleString()}</td>
+          <td style="color:var(--muted);font-size:12px">${s.last_seen ? new Date(s.last_seen).toLocaleString() : '—'}</td>
+          <td><button class="btn-ghost" onclick="show('analytics');setTimeout(()=>filterAnalyticsBySite('${esc(s.site)}'),50)">Drill in</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">No traffic in the last 30 days.</td></tr>`;
+
+      const recent = d.recent || [];
+      recentEl.innerHTML = recent.length ? recent.map(v => {
+        let referrerLabel = 'Direct';
+        if (v.referrer && v.referrer !== 'direct') {
+          try { referrerLabel = new URL(v.referrer).hostname; } catch(_) {}
+        }
+        return `<tr>
+          <td><span class="role-pill Editor" style="font-size:10px">${esc(v.site || 'logicmarketing')}</span></td>
+          <td><code style="font-size:12px">${esc(v.ip||'—')}</code></td>
+          <td>${esc(v.flag||'')} ${esc(v.city||'—')}${v.country ? ', ' + esc(v.country) : ''}</td>
+          <td><b>${esc(v.page||'index.html')}</b></td>
+          <td style="color:var(--muted)">${esc(referrerLabel)}</td>
+          <td style="color:var(--muted);font-size:12px">${new Date(v.ts).toLocaleString()}</td>
+        </tr>`;
+      }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">No visitors yet.</td></tr>`;
+    } catch (e) {
+      sitesEl.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Admin access required.</td></tr>`;
+      recentEl.innerHTML = '';
+    }
+  }
+  function filterAnalyticsBySite(site) {
+    // Light hook so the existing analytics page can be re-rendered for a chosen site.
+    fetch('/api/analytics/overview?site=' + encodeURIComponent(site))
+      .then(r => r.json())
+      .then(d => { if (typeof renderAnalyticsFromServer === 'function') renderAnalyticsFromServer(d); })
+      .catch(() => {});
   }
 
   /* ===== ANALYTICS (real data from backend) ===== */

@@ -458,9 +458,10 @@ app.post('/api/track/visit', async (req, res) => {
   const addr = ip(req);
   // Prefer server-side geo (reliable). Fall back to client-provided geo.
   const g = await lookupGeo(addr) || {};
+  const site = (v.site || 'logicmarketing').toString().slice(0, 80);
   await pool.query(
-    `INSERT INTO visits (session_id, ip, city, region, country, country_code, flag, page, path, referrer, user_agent, language, screen)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+    `INSERT INTO visits (session_id, ip, city, region, country, country_code, flag, page, path, referrer, user_agent, language, screen, site)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
     [v.sessionId, addr || null,
      g.city || v.city || '',
      g.region || v.region || '',
@@ -468,7 +469,8 @@ app.post('/api/track/visit', async (req, res) => {
      g.country_code || v.country_code || '',
      g.flag || v.flag || '',
      v.page || '', v.path || '',
-     v.referrer || '', (v.ua || '').slice(0, 300), v.lang || '', v.screen || '']
+     v.referrer || '', (v.ua || '').slice(0, 300), v.lang || '', v.screen || '',
+     site]
   );
   res.json({ ok: true });
 });
@@ -480,9 +482,10 @@ app.post('/api/track/reset', async (_req, res) => {
 });
 app.post('/api/track/click', async (req, res) => {
   const c = req.body || {};
+  const site = (c.site || 'logicmarketing').toString().slice(0, 80);
   await pool.query(
-    `INSERT INTO clicks (session_id, ip, page, target, href) VALUES ($1,$2,$3,$4,$5)`,
-    [c.sessionId, ip(req) || null, c.page || '', (c.target || '').slice(0, 200), (c.href || '').slice(0, 500)]
+    `INSERT INTO clicks (session_id, ip, page, target, href, site) VALUES ($1,$2,$3,$4,$5,$6)`,
+    [c.sessionId, ip(req) || null, c.page || '', (c.target || '').slice(0, 200), (c.href || '').slice(0, 500), site]
   );
   res.json({ ok: true });
 });
@@ -490,34 +493,57 @@ app.post('/api/track/click', async (req, res) => {
 // ============================================================
 // ANALYTICS aggregation
 // ============================================================
-app.get('/api/analytics/overview', async (_req, res) => {
+app.get('/api/analytics/overview', async (req, res) => {
   const since30 = "now() - interval '30 days'";
+  // Optional ?site=X filter. Defaults to logicmarketing so the public dashboard
+  // never accidentally surfaces other properties.
+  const site = (req.query.site || 'logicmarketing').toString().slice(0, 80);
+  const where = `ts > ${since30} AND site = $1`;
   const [{ rows: vTotal }, { rows: sessTotal }, { rows: clkTotal }, { rows: daily }, { rows: geo }, { rows: pages }, { rows: recent }] =
     await Promise.all([
-      pool.query(`SELECT COUNT(*)::int AS n FROM visits WHERE ts > ${since30}`),
-      pool.query(`SELECT COUNT(DISTINCT session_id)::int AS n FROM visits WHERE ts > ${since30}`),
-      pool.query(`SELECT COUNT(*)::int AS n FROM clicks WHERE ts > ${since30}`),
+      pool.query(`SELECT COUNT(*)::int AS n FROM visits WHERE ${where}`, [site]),
+      pool.query(`SELECT COUNT(DISTINCT session_id)::int AS n FROM visits WHERE ${where}`, [site]),
+      pool.query(`SELECT COUNT(*)::int AS n FROM clicks WHERE ts > ${since30} AND site = $1`, [site]),
       pool.query(`
         SELECT date_trunc('day', ts) AS day, COUNT(DISTINCT session_id)::int AS sessions
-        FROM visits WHERE ts > ${since30} GROUP BY 1 ORDER BY 1`),
+        FROM visits WHERE ${where} GROUP BY 1 ORDER BY 1`, [site]),
       pool.query(`
         SELECT city, country, flag, COUNT(*)::int AS n FROM visits
-        WHERE ts > ${since30} AND city <> ''
-        GROUP BY city, country, flag ORDER BY n DESC LIMIT 10`),
+        WHERE ${where} AND city <> ''
+        GROUP BY city, country, flag ORDER BY n DESC LIMIT 10`, [site]),
       pool.query(`
         SELECT v.page,
           COUNT(*)::int AS views,
-          (SELECT COUNT(*)::int FROM clicks c WHERE c.page = v.page AND c.ts > ${since30}) AS clicks
-        FROM visits v WHERE ts > ${since30}
-        GROUP BY v.page ORDER BY views DESC LIMIT 10`),
-      pool.query(`SELECT ip, city, country, flag, page, referrer, ts FROM visits ORDER BY ts DESC LIMIT 25`)
+          (SELECT COUNT(*)::int FROM clicks c WHERE c.page = v.page AND c.site = $1 AND c.ts > ${since30}) AS clicks
+        FROM visits v WHERE ${where}
+        GROUP BY v.page ORDER BY views DESC LIMIT 10`, [site]),
+      pool.query(`SELECT ip, city, country, flag, page, referrer, ts FROM visits WHERE site = $1 ORDER BY ts DESC LIMIT 25`, [site])
     ]);
   res.json({
+    site,
     pageViews: vTotal[0].n,
     sessions: sessTotal[0].n,
     clicks: clkTotal[0].n,
     daily, geo, pages, recent
   });
+});
+
+// Admin-only: per-site overview for the Website Monitoring dashboard.
+app.get('/api/analytics/sites', auth, adminOnly, async (_req, res) => {
+  const since30 = "now() - interval '30 days'";
+  const { rows: sites } = await pool.query(`
+    SELECT
+      COALESCE(site, 'logicmarketing') AS site,
+      COUNT(*)::int                      AS page_views,
+      COUNT(DISTINCT session_id)::int    AS sessions,
+      MAX(ts)                            AS last_seen
+    FROM visits
+    WHERE ts > ${since30}
+    GROUP BY 1 ORDER BY page_views DESC`);
+  const { rows: recent } = await pool.query(`
+    SELECT site, ip, city, country, flag, page, referrer, ts
+    FROM visits ORDER BY ts DESC LIMIT 50`);
+  res.json({ sites, recent });
 });
 
 // ============================================================

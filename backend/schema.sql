@@ -160,3 +160,9 @@ CREATE TABLE IF NOT EXISTS kv (
 -- Extend messages with attachments + reactions JSON blobs (idempotent for older DBs).
 ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachments JSONB DEFAULT '[]'::jsonb;
 ALTER TABLE messages ADD COLUMN IF NOT EXISTS reactions   JSONB DEFAULT '{}'::jsonb;
+
+-- Multi-site tracking: tag every visit/click with the originating site.
+ALTER TABLE visits ADD COLUMN IF NOT EXISTS site TEXT DEFAULT 'logicmarketing';
+ALTER TABLE clicks ADD COLUMN IF NOT EXISTS site TEXT DEFAULT 'logicmarketing';
+CREATE INDEX IF NOT EXISTS idx_visits_site_ts ON visits(site, ts);
+CREATE INDEX IF NOT EXISTS idx_clicks_site_ts ON clicks(site, ts);
